@@ -8,10 +8,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const salt = bcrypt.genSaltSync(10);
 
-const fs=require('fs');
+const fs = require('fs');
 
-var keyFile = fs.readFileSync('TOKEN_KEY.json');
-var secretKey = JSON.parse(keyFile).Token_Secret_Key;
 
 var bodyParser = require('body-parser');
 var cors = require('cors');
@@ -65,25 +63,26 @@ app.listen(app.get('port'), function () {
 
 
 // Test for connections
-db.getConnection( async (err) =>  {
+db.getConnection(async (err) => {
     console.log('Connecting mySQL....');
     if (err) {
         throw err;
     }
     console.log('mysql connected....');
-            
-    var token = await GenerateToken({ID:1,Nmae:"dsadsa"});
+
+    var token = await GenerateToken({ ID: 1, Nmae: "dsadsa" });
     console.log(token);
-    jwt.verify(token,secretKey, function(err,decoded){
+    jwt.verify(token, secretKey, function (err, decoded) {
         console.log(decoded.student.ID);
     })
 });
 
 //local test
-app.post('/test', cors(corsOptions), function (request, response) {
-    db.query("Select * From Student Where AdminNumber = ?;", ["173642u"], function (error, result, fields) {
-        response.send(result);
-    })
+app.post('/test', cors(corsOptions), async function (request, response) {
+    response.send(await GenerateToken({
+        AdminNumber:"17",
+        UUID:"15"
+    }))
 });
 //web url test
 app.get('/Students', cors(corsOptions), function (request, response) {
@@ -106,60 +105,60 @@ app.post('/Login_Password', cors(corsOptions), function (request, response) {
 
     if (AdminNumber != null && InputPassword != null && UUID != null) {
         db.query("Select * From Student Where AdminNumber = ? ;", [AdminNumber], async function (error, result, fields) {
-                if (result.length > 0) {
-                    if (result[0].Password != null && result[0].UUID != null) {
-                        var match = bcrypt.compareSync(InputPassword, result[0].Password);
+            if (result.length > 0) {
+                if (result[0].Password != null && result[0].UUID != null) {
+                    var match = bcrypt.compareSync(InputPassword, result[0].Password);
 
-                        if (match) {
-                            if (UUID == result[0].UUID) {
-                                if(Token==null){ //if user side has no token, on login, will generate a token and return
-                                    Token = await GenerateToken({
-                                        AdminNumber:AdminNumber,
-                                        UUID:UUID
-                                    });
-                                }
-                                response.send({
-                                    "ID": 1,
-                                    "Success": true,
-                                    "Error_Message": "Authenticated to Login",
-                                    "Token":Token
+                    if (match) {
+                        if (UUID == result[0].UUID) {
+                            if (Token == null) { //if user side has no token, on login, will generate a token and return
+                                Token = await GenerateToken({
+                                    AdminNumber: AdminNumber,
+                                    UUID: UUID
                                 });
                             }
-                            else {
-                                response.send({
-                                    "ID": 2,
-                                    "Success": false,
-                                    "Error_Message": "This Account Has Already Registered On Another Device!",
-                                    "Token":null
-                                });
-                            }
+                            response.send({
+                                "ID": 1,
+                                "Success": true,
+                                "Error_Message": "Authenticated to Login",
+                                "Token": Token
+                            });
                         }
                         else {
                             response.send({
-                                "ID": 3,
+                                "ID": 2,
                                 "Success": false,
-                                "Error_Message": "Wrong Password!",
-                                "Token":null
+                                "Error_Message": "This Account Has Already Registered On Another Device!",
+                                "Token": null
                             });
                         }
                     }
                     else {
                         response.send({
-                            "ID": 4,
+                            "ID": 3,
                             "Success": false,
-                            "Error_Message": "This Account Has Not Registered Yet!",
-                            "Token":null
+                            "Error_Message": "Wrong Password!",
+                            "Token": null
                         });
                     }
                 }
                 else {
                     response.send({
-                        "ID": 5,
+                        "ID": 4,
                         "Success": false,
-                        "Error_Message": "The Admin Number Does Not Exist",
-                        "Token":null
+                        "Error_Message": "This Account Has Not Registered Yet!",
+                        "Token": null
                     });
                 }
+            }
+            else {
+                response.send({
+                    "ID": 5,
+                    "Success": false,
+                    "Error_Message": "The Admin Number Does Not Exist",
+                    "Token": null
+                });
+            }
         });
     }
     else {
@@ -167,7 +166,7 @@ app.post('/Login_Password', cors(corsOptions), function (request, response) {
             "ID": 6,
             "Success": false,
             "Error_Message": "Missing Information",
-            "Token":null
+            "Token": null
         });
     }
 });
@@ -177,12 +176,12 @@ app.post('/Login_Token', cors(corsOptions), function (request, response) {
     var UUID = request.body.UUID;
     var Token = request.body.Token;
     if (Token != null && UUID != null) {
-        jwt.verify(Token,secretKey,function(err, decodedInfo){
-            if(decodedInfo.student.UUID==UUID){
-                db.query("Select * From Student Where AdminNumber = ? AND UUID = ? ",[decodedInfo.student.AdminNumber, UUID], function(err, result){
-                    if(result.length>0){
+        jwt.verify(Token, secretKey, function (err, decodedInfo) {
+            if (decodedInfo.student.UUID == UUID) {
+                db.query("Select * From Student Where AdminNumber = ? AND UUID = ? ", [decodedInfo.student.AdminNumber, UUID], function (err, result) {
+                    if (result.length > 0) {
                         response.send({
-                            "Authenticated":true
+                            "Authenticated": true
                         });
                     }
                 })
@@ -191,7 +190,7 @@ app.post('/Login_Token', cors(corsOptions), function (request, response) {
     }
     else {
         response.send({
-            "Authenticated":false
+            "Authenticated": false
         });
     }
 });
@@ -203,8 +202,8 @@ app.post('/Register', cors(corsOptions), async function (request, response) {
     var UUID = request.body.UUID;
     var RegisterDate = (moment().tz('Asia/Singapore').format('Do-MMMM-YYYY'));
     var Token = await GenerateToken({
-        AdminNumber:AdminNumber,
-        UUID:UUID
+        AdminNumber: AdminNumber,
+        UUID: UUID
     });
 
     if (AdminNumber != null && InputPassword != null && UUID != null) {
@@ -213,24 +212,24 @@ app.post('/Register', cors(corsOptions), async function (request, response) {
             function (err, result, fields) {
                 if (err) {
                     response.send({
-                        "Success":false,
-                        "AccountToken":null,
-                        "Error_Message":"Failed to register!"
+                        "Success": false,
+                        "AccountToken": null,
+                        "Error_Message": "Failed to register!"
                     })
                 }
                 else {
-                    if(result.affectedRows>0){
+                    if (result.affectedRows > 0) {
                         response.send({
-                            "Success":true,
-                            "AccountToken":Token,
-                            "Error_Message":null
+                            "Success": true,
+                            "AccountToken": Token,
+                            "Error_Message": null
                         })
                     }
-                    else{
+                    else {
                         response.send({
-                            "Success":false,
-                            "AccountToken":null,
-                            "Error_Message":"Failed to register!"
+                            "Success": false,
+                            "AccountToken": null,
+                            "Error_Message": "Failed to register!"
                         })
                     }
                 }
@@ -245,8 +244,8 @@ app.post('/OverwriteDevice', cors(corsOptions), async function (request, respons
     var UUID = request.body.UUID;
     var RegisterDate = (moment().tz('Asia/Singapore').format('Do-MMMM-YYYY'));
     var Token = await GenerateToken({
-        AdminNumber:AdminNumber,
-        UUID:UUID
+        AdminNumber: AdminNumber,
+        UUID: UUID
     });
 
     if (AdminNumber != null && UUID != null && InputPassword != null) {
@@ -256,44 +255,44 @@ app.post('/OverwriteDevice', cors(corsOptions), async function (request, respons
                 if (match) {
                     db.query("Update Student Set UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [UUID, RegisterDate, AdminNumber],
                         function (err, result, fields) {
-                            if(result.affectedRows>0){
+                            if (result.affectedRows > 0) {
                                 response.send({
-                                    "Success":true,
-                                    "AccountToken":Token,
-                                    "Error_Message":null
+                                    "Success": true,
+                                    "AccountToken": Token,
+                                    "Error_Message": null
                                 })
                             }
-                            else{
+                            else {
                                 response.send({
-                                    "Success":false,
-                                    "AccountToken":null,
-                                    "Error_Message":"Error Occurs When Updating Account Information!"
+                                    "Success": false,
+                                    "AccountToken": null,
+                                    "Error_Message": "Error Occurs When Updating Account Information!"
                                 })
                             }
                         });
                 }
                 else {
                     response.send({
-                        "Success":false,
-                        "AccountToken":null,
-                        "Error_Message":"Wrong Password!"
+                        "Success": false,
+                        "AccountToken": null,
+                        "Error_Message": "Wrong Password!"
                     })
                 }
             }
             else {
                 response.send({
-                    "Success":false,
-                    "AccountToken":null,
-                    "Error_Message":"Error Getting Student Information With Provided Admin Number"
+                    "Success": false,
+                    "AccountToken": null,
+                    "Error_Message": "Error Getting Student Information With Provided Admin Number"
                 });
             }
         })
     }
     else {
         response.send({
-            "Success":false,
-            "AccountToken":null,
-            "Error_Message":"Missing Information!"
+            "Success": false,
+            "AccountToken": null,
+            "Error_Message": "Missing Information!"
         });
     }
 });
@@ -310,15 +309,16 @@ app.post('/StudentByAdminNum', cors(corsOptions), function (request, response) {
 });
 
 
-function GenerateToken(student){
-    return new Promise(resolve =>{
+function GenerateToken(student) {
+    return new Promise(resolve => {
 
+        var keyFile = fs.readFileSync('TOKEN_KEY.json');
+        var secretKey = JSON.parse(keyFile).Token_Secret_Key;
 
-    if(typeof secretKey !== undefined){
-        jwt.sign({student:student}, secretKey, {algorithm:'HS256'}, function(err, token){
-            resolve(token);
-        })
-    }
-    resolve("ds");
-})
+        if (typeof secretKey !== undefined) {
+            jwt.sign({ student: student }, secretKey, { algorithm: 'HS256' }, function (err, token) {
+                resolve(token);
+            })
+        }
+    })
 }
