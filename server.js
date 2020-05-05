@@ -206,7 +206,7 @@ app.post('/OverwriteDevice', cors(corsOptions), function (request, response) {
                     db.query("Update Student Set UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [UUID, RegisterDate, AdminNumber],
                         function (err, result, fields) {
                             if (result!=null) {
-                                response.send(JSON.parse(JSON.stringify(result)));
+                                response.send(result);
                             }
                             else {
                                 response.send("Error Occurs When Updating Account Information!");
