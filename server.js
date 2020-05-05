@@ -211,7 +211,7 @@ app.post('/OverwriteDevice', cors(corsOptions), function (request, response) {
                             else {
                                 response.send("Error Occurs When Updating Account Information!");
                             }
-                        })
+                        });
                 }
                 else {
                     response.send("Wrong Password!");
