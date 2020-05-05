@@ -104,7 +104,6 @@ app.post('/Login', cors(corsOptions), function (request, response) {
     if (AdminNumber != null && InputPassword != null && UUID != null) {
 
         db.query("Select * From Student Where AdminNumber = ? ;", [AdminNumber], function (error, result, fields) {
-                response.send(result[0]);
                 if (result.length > 0) {
                     if (result[0].Password != null && result[0].UUID != null) {
                         var match = bcrypt.compareSync(InputPassword, result[0].Password);
