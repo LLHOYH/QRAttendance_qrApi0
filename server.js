@@ -99,8 +99,6 @@ app.post('/Login', cors(corsOptions), function (request, response) {
     var InputPassword = request.body.InputPassword;
     var UUID = request.body.UUID;
 
-    var msgJson;
-
     if (AdminNumber != null && InputPassword != null && UUID != null) {
 
         db.query("Select * From Student Where AdminNumber = ? ;", [AdminNumber], function (error, result, fields) {
@@ -204,10 +202,11 @@ app.post('/OverwriteDevice', cors(corsOptions), function (request, response) {
         db.query("Select * From Student Where AdminNumber = ?;", [AdminNumber], function (error, result, fields) {
             if (result.length > 0) {
                 var match = bcrypt.compareSync(InputPassword, result[0].Password);
+                response.send(match);
                 if (match) {
                     db.query("Update Student Set UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [UUID, RegisterDate, AdminNumber],
                         function (err, result, fields) {
-                            if (!err) {
+                            if (result!=null) {
                                 response.send(JSON.parse(JSON.stringify(result)));
                             }
                             else {
