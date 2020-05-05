@@ -214,7 +214,7 @@ app.post('/OverwriteDevice', cors(corsOptions), function (request, response) {
                         });
                 }
                 else {
-                    response.send("Wrong Password!");
+                    response.send(JSON.parse("Wrong Password!"));
                 }
             }
             else {
