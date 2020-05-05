@@ -316,8 +316,8 @@ app.post('/StudentByAdminNum', cors(corsOptions), function (request, response) {
 function GenerateToken(student) {
     return new Promise(resolve => {
 
-        var keyFile = fs.readFileSync('TOKEN_KEY.json');
-        var secretKey = "dsa";
+        var keyFile = fs.readFile('TOKEN_KEY.json');
+        var secretKey = JSON.parse(keyFile).Token_Secret_Key;
 
         if (typeof secretKey !== undefined) {
             jwt.sign({ student: student }, secretKey, { algorithm: 'HS256' }, function (err, token) {
