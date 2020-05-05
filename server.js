@@ -114,12 +114,13 @@ app.post('/Login_Password', cors(corsOptions), function (request, response) {
 
                         if (match) {
                             if (UUID == result[0].UUID) {
-                                if(Token==null){ //if user side has no token, on login, will generate a token and return
-                                    Token = await GenerateToken({
-                                        AdminNumber:AdminNumber,
-                                        UUID:UUID
-                                    });
-                                }
+                                // if(Token==null){ //if user side has no token, on login, will generate a token and return
+                                //     Token = await GenerateToken({
+                                //         AdminNumber:AdminNumber,
+                                //         UUID:UUID
+                                //     });
+                                // }
+                                Token="ds";
                                 response.send({
                                     "ID": 1,
                                     "Success": true,
