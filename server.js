@@ -212,7 +212,7 @@ app.post('/Register', cors(corsOptions), async function (request, response) {
 
     if (AdminNumber != null && InputPassword != null && UUID != null) {
         var HashedPassword = bcrypt.hashSync(InputPassword, salt);
-        db.query("Update Student Set Password = ?, UUID = ?, LastRegisterDate = ?, AccountToken = ? Where AdminNumber = ?;", [HashedPassword, UUID, RegisterDate, Token, AdminNumber],
+        db.query("Update Student Set Password = ?, UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [HashedPassword, UUID, RegisterDate, AdminNumber],
             function (err, result, fields) {
                 if (err) {
                     response.send({
@@ -257,7 +257,7 @@ app.post('/OverwriteDevice', cors(corsOptions), async function (request, respons
             if (result.length > 0) {
                 var match = bcrypt.compareSync(InputPassword, result[0].Password);
                 if (match) {
-                    db.query("Update Student Set UUID = ?, LastRegisterDate = ?, AccountToken = ? Where AdminNumber = ?;", [UUID, RegisterDate, Token, AdminNumber],
+                    db.query("Update Student Set UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [UUID, RegisterDate, AdminNumber],
                         function (err, result, fields) {
                             if(result.affectedRows>0){
                                 response.send({
