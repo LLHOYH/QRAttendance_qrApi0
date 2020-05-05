@@ -7,12 +7,13 @@ const app = express();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const salt = bcrypt.genSaltSync(10);
+
 const fs=require('fs');
 const keyFile = fs.readFileSync('TOKEN_KEY.json');
+
 var bodyParser = require('body-parser');
 var cors = require('cors');
 var methodOverride = require('method-override');
-var secretKey = JSON.parse(keyFile).Token_Secret_Key;
 app.use(cors());
 app.use(bodyParser.json());
 app.use(methodOverride());
@@ -102,68 +103,62 @@ app.post('/Login_Password', cors(corsOptions), function (request, response) {
     var Token = request.body.Token;
 
     if (AdminNumber != null && InputPassword != null && UUID != null) {
+        db.query("Select * From Student Where AdminNumber = ? ;", [AdminNumber], async function (error, result, fields) {
+                if (result.length > 0) {
+                    if (result[0].Password != null && result[0].UUID != null) {
+                        var match = bcrypt.compareSync(InputPassword, result[0].Password);
+
+                        if (match) {
+                            if (UUID == result[0].UUID) {
+                                if(Token==null){ //if user side has no token, on login, will generate a token and return
+                                    Token = await GenerateToken({
+                                        AdminNumber:AdminNumber,
+                                        UUID:UUID
+                                    });
+                                }
                                 response.send({
                                     "ID": 1,
                                     "Success": true,
                                     "Error_Message": "Authenticated to Login",
                                     "Token":Token
                                 });
-        // db.query("Select * From Student Where AdminNumber = ? ;", [AdminNumber], async function (error, result, fields) {
-        //         if (result.length > 0) {
-        //             if (result[0].Password != null && result[0].UUID != null) {
-        //                 var match = bcrypt.compareSync(InputPassword, result[0].Password);
-
-        //                 if (match) {
-        //                     if (UUID == result[0].UUID) {
-        //                         if(Token==null){ //if user side has no token, on login, will generate a token and return
-        //                             Token = await GenerateToken({
-        //                                 AdminNumber:AdminNumber,
-        //                                 UUID:UUID
-        //                             });
-        //                         }
-        //                         response.send({
-        //                             "ID": 1,
-        //                             "Success": true,
-        //                             "Error_Message": "Authenticated to Login",
-        //                             "Token":Token
-        //                         });
-        //                     }
-        //                     else {
-        //                         response.send({
-        //                             "ID": 2,
-        //                             "Success": false,
-        //                             "Error_Message": "This Account Has Already Registered On Another Device!",
-        //                             "Token":null
-        //                         });
-        //                     }
-        //                 }
-        //                 else {
-        //                     response.send({
-        //                         "ID": 3,
-        //                         "Success": false,
-        //                         "Error_Message": "Wrong Password!",
-        //                         "Token":null
-        //                     });
-        //                 }
-        //             }
-        //             else {
-        //                 response.send({
-        //                     "ID": 4,
-        //                     "Success": false,
-        //                     "Error_Message": "This Account Has Not Registered Yet!",
-        //                     "Token":null
-        //                 });
-        //             }
-        //         }
-        //         else {
-        //             response.send({
-        //                 "ID": 5,
-        //                 "Success": false,
-        //                 "Error_Message": "The Admin Number Does Not Exist",
-        //                 "Token":null
-        //             });
-        //         }
-        // });
+                            }
+                            else {
+                                response.send({
+                                    "ID": 2,
+                                    "Success": false,
+                                    "Error_Message": "This Account Has Already Registered On Another Device!",
+                                    "Token":null
+                                });
+                            }
+                        }
+                        else {
+                            response.send({
+                                "ID": 3,
+                                "Success": false,
+                                "Error_Message": "Wrong Password!",
+                                "Token":null
+                            });
+                        }
+                    }
+                    else {
+                        response.send({
+                            "ID": 4,
+                            "Success": false,
+                            "Error_Message": "This Account Has Not Registered Yet!",
+                            "Token":null
+                        });
+                    }
+                }
+                else {
+                    response.send({
+                        "ID": 5,
+                        "Success": false,
+                        "Error_Message": "The Admin Number Does Not Exist",
+                        "Token":null
+                    });
+                }
+        });
     }
     else {
         response.send({
@@ -315,11 +310,14 @@ app.post('/StudentByAdminNum', cors(corsOptions), function (request, response) {
 
 function GenerateToken(student){
     return new Promise(resolve =>{
-    // if(typeof secretKey !== undefined){
-    //     jwt.sign({student:student}, secretKey, {algorithm:'HS256'}, function(err, token){
-    //         resolve(token);
-    //     })
-    // }
+        
+    var secretKey = JSON.parse(keyFile).Token_Secret_Key;
+
+    if(typeof secretKey !== undefined){
+        jwt.sign({student:student}, secretKey, {algorithm:'HS256'}, function(err, token){
+            resolve(token);
+        })
+    }
     resolve("ds");
 })
 }
