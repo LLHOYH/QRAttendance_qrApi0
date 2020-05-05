@@ -103,55 +103,56 @@ app.post('/Login', cors(corsOptions), function (request, response) {
 
     if (AdminNumber != null && InputPassword != null && UUID != null) {
 
-        db.query("Select * From Student Where AdminNumber = ?;", [AdminNumber], function (error, result, fields) {
-            if (error) {
-                response.send(error);
-            }
-            else {
-                if (result.length > 0) {
-                    if (result[0].Password != null && result[0].UUID != null) {
-                        var match = bcrypt.compareSync(InputPassword,result[0].Password);
+    db.query("Select * From Student Where AdminNumber = ?;", [AdminNumber], function (error, result, fields) {
+        response.send("Error: "+error + ". Result"+JSON.stringify(result));
+        //     if (error) {
+        //         response.send(error);
+        //     }
+        //     else {
+        //         if (result.length > 0) {
+        //             if (result[0].Password != null && result[0].UUID != null) {
+        //                 var match = bcrypt.compareSync(InputPassword,result[0].Password);
                             
-                                if (res) {
-                                    if (UUID == result[0].UUID) {
-                                        msgJson = {
-                                            "ID": 1,
-                                            "Status": true,
-                                            "Message": "Authenticated to Login"
-                                        };
-                                    }
-                                    else {
-                                        msgJson = {
-                                            "ID": 2,
-                                            "Status": false,
-                                            "Message": "This Account Has Already Registered On Another Device!"
-                                        };
-                                    }
-                                }
-                                else {
-                                    msgJson = {
-                                        "ID": 3,
-                                        "Status": false,
-                                        "Message": "Wrong Password!"
-                                    };
-                                }
-                    }
-                    else {
-                        msgJson = {
-                            "ID": 4,
-                            "Status": false,
-                            "Message": "This Account Has Not Registered Yet!"
-                        };
-                    }
-                }
-                else {
-                    msgJson = {
-                        "ID": 5,
-                        "Status": false,
-                        "Message": "The Admin Number Does Not Exist"
-                    };
-                }
-            }
+        //                         if (res) {
+        //                             if (UUID == result[0].UUID) {
+        //                                 msgJson = {
+        //                                     "ID": 1,
+        //                                     "Status": true,
+        //                                     "Message": "Authenticated to Login"
+        //                                 };
+        //                             }
+        //                             else {
+        //                                 msgJson = {
+        //                                     "ID": 2,
+        //                                     "Status": false,
+        //                                     "Message": "This Account Has Already Registered On Another Device!"
+        //                                 };
+        //                             }
+        //                         }
+        //                         else {
+        //                             msgJson = {
+        //                                 "ID": 3,
+        //                                 "Status": false,
+        //                                 "Message": "Wrong Password!"
+        //                             };
+        //                         }
+        //             }
+        //             else {
+        //                 msgJson = {
+        //                     "ID": 4,
+        //                     "Status": false,
+        //                     "Message": "This Account Has Not Registered Yet!"
+        //                 };
+        //             }
+        //         }
+        //         else {
+        //             msgJson = {
+        //                 "ID": 5,
+        //                 "Status": false,
+        //                 "Message": "The Admin Number Does Not Exist"
+        //             };
+        //         }
+        //     }
             })
     }
     else {
