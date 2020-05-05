@@ -197,29 +197,24 @@ app.post('/Register', cors(corsOptions), function (request, response) {
     var RegisterDate = (moment().tz('Asia/Singapore').format('Do-MMMM-YYYY'));
 
     if (AdminNumber != null && InputPassword != null && UUID != null) {
-        response.send({
-            AdminNumber:AdminNumber,
-            InputPassword:InputPassword,
-            UUID:UUID,
-            RegisterDate:RegisterDate
-        })
-        // bcrypt.hashSync(InputPassword, salt, function (error, HashedPassword) {
-        //     if (!error) {
-        //         db.query("Update Student Set Password = ?, UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [HashedPassword, UUID, RegisterDate, AdminNumber],
-        //             function (err, result, fields) {
-        //                 if (err) {
-        //                     response.send(err);
-        //                 }
-        //                 else {
-        //                     response.send(JSON.parse(JSON.stringify(result)));
-        //                 }
-        //             })
-        //     }
-        //     else {
-        //         response.send(error);
-        //     }
+        bcrypt.hashSync(InputPassword, salt, function (error, HashedPassword) {
+            response.send(HashedPassword);
+            // if (!error) {
+            //     db.query("Update Student Set Password = ?, UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [HashedPassword, UUID, RegisterDate, AdminNumber],
+            //         function (err, result, fields) {
+            //             if (err) {
+            //                 response.send(err);
+            //             }
+            //             else {
+            //                 response.send(JSON.parse(JSON.stringify(result)));
+            //             }
+            //         })
+            // }
+            // else {
+            //     response.send(error);
+            // }
 
-        // })
+        })
 
     }
 });
