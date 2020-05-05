@@ -106,71 +106,68 @@ app.post('/Login_Password', cors(corsOptions), function (request, response) {
     var Token = request.body.Token;
 
     if (AdminNumber != null && InputPassword != null && UUID != null) {
+                                response.send({
+                                    "ID": 1,
+                                    "Success": true,
+                                    "Error_Message": "Authenticated to Login",
+                                    "Token":Token
+                                });
+        // db.query("Select * From Student Where AdminNumber = ? ;", [AdminNumber], async function (error, result, fields) {
+        //         if (result.length > 0) {
+        //             if (result[0].Password != null && result[0].UUID != null) {
+        //                 var match = bcrypt.compareSync(InputPassword, result[0].Password);
 
-        db.query("Select * From Student Where AdminNumber = ? ;", [AdminNumber], async function (error, result, fields) {
-                if (result.length > 0) {
-                    if (result[0].Password != null && result[0].UUID != null) {
-                        response.send({
-                                        "ID": 1,
-                                        "Success": true,
-                                        "Error_Message": "Authenticated to Login",
-                                        "Token":"dsa"
-                                    });
-
-                        // var match = bcrypt.compareSync(InputPassword, result[0].Password);
-
-                        // if (match) {
-                        //     if (UUID == result[0].UUID) {
-                        //         // if(Token==null){ //if user side has no token, on login, will generate a token and return
-                        //         //     Token = await GenerateToken({
-                        //         //         AdminNumber:AdminNumber,
-                        //         //         UUID:UUID
-                        //         //     });
-                        //         // }
-                        //         Token="ds";
-                        //         response.send({
-                        //             "ID": 1,
-                        //             "Success": true,
-                        //             "Error_Message": "Authenticated to Login",
-                        //             "Token":Token
-                        //         });
-                        //     }
-                        //     else {
-                        //         response.send({
-                        //             "ID": 2,
-                        //             "Success": false,
-                        //             "Error_Message": "This Account Has Already Registered On Another Device!",
-                        //             "Token":null
-                        //         });
-                        //     }
-                        // }
-                        // else {
-                        //     response.send({
-                        //         "ID": 3,
-                        //         "Success": false,
-                        //         "Error_Message": "Wrong Password!",
-                        //         "Token":null
-                        //     });
-                        // }
-                    }
-                    else {
-                        response.send({
-                            "ID": 4,
-                            "Success": false,
-                            "Error_Message": "This Account Has Not Registered Yet!",
-                            "Token":null
-                        });
-                    }
-                }
-                else {
-                    response.send({
-                        "ID": 5,
-                        "Success": false,
-                        "Error_Message": "The Admin Number Does Not Exist",
-                        "Token":null
-                    });
-                }
-        });
+        //                 if (match) {
+        //                     if (UUID == result[0].UUID) {
+        //                         if(Token==null){ //if user side has no token, on login, will generate a token and return
+        //                             Token = await GenerateToken({
+        //                                 AdminNumber:AdminNumber,
+        //                                 UUID:UUID
+        //                             });
+        //                         }
+        //                         response.send({
+        //                             "ID": 1,
+        //                             "Success": true,
+        //                             "Error_Message": "Authenticated to Login",
+        //                             "Token":Token
+        //                         });
+        //                     }
+        //                     else {
+        //                         response.send({
+        //                             "ID": 2,
+        //                             "Success": false,
+        //                             "Error_Message": "This Account Has Already Registered On Another Device!",
+        //                             "Token":null
+        //                         });
+        //                     }
+        //                 }
+        //                 else {
+        //                     response.send({
+        //                         "ID": 3,
+        //                         "Success": false,
+        //                         "Error_Message": "Wrong Password!",
+        //                         "Token":null
+        //                     });
+        //                 }
+        //             }
+        //             else {
+        //                 response.send({
+        //                     "ID": 4,
+        //                     "Success": false,
+        //                     "Error_Message": "This Account Has Not Registered Yet!",
+        //                     "Token":null
+        //                 });
+        //             }
+        //         }
+        //         else {
+        //             response.send({
+        //                 "ID": 5,
+        //                 "Success": false,
+        //                 "Error_Message": "The Admin Number Does Not Exist",
+        //                 "Token":null
+        //             });
+        //         }
+        // });
     }
     else {
         response.send({
