@@ -103,9 +103,9 @@ app.post('/Login', cors(corsOptions), function (request, response) {
 
     if (AdminNumber != null && InputPassword != null && UUID != null) {
         db.query("Select * From Student Where AdminNumber = ?;", [AdminNumber], function (error, result, fields) {
-            console.log(result);
+            response.send(result);
         });
-         db.query("Select * From Student Where AdminNumber = ? ", [AdminNumber], function (error, result, fields) {
+         db.query("Select * From Student Where AdminNumber = ? ;", [AdminNumber], function (error, result, fields) {
         response.send("Error: "+error + "result: "+JSON.stringify(result));
             //     if (error) {
         //         response.send(error);
