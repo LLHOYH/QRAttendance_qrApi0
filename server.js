@@ -133,7 +133,7 @@ app.post('/Login_Password', cors(corsOptions), function (request, response) {
                                     "ID": 2,
                                     "Success": false,
                                     "Error_Message": "This Account Has Already Registered On Another Device!",
-                                    "Token":Token
+                                    "Token":null
                                 });
                             }
                         }
@@ -142,7 +142,7 @@ app.post('/Login_Password', cors(corsOptions), function (request, response) {
                                 "ID": 3,
                                 "Success": false,
                                 "Error_Message": "Wrong Password!",
-                                "Token":Token
+                                "Token":null
                             });
                         }
                     }
@@ -151,7 +151,7 @@ app.post('/Login_Password', cors(corsOptions), function (request, response) {
                             "ID": 4,
                             "Success": false,
                             "Error_Message": "This Account Has Not Registered Yet!",
-                            "Token":Token
+                            "Token":null
                         });
                     }
                 }
@@ -160,7 +160,7 @@ app.post('/Login_Password', cors(corsOptions), function (request, response) {
                         "ID": 5,
                         "Success": false,
                         "Error_Message": "The Admin Number Does Not Exist",
-                        "Token":Token
+                        "Token":null
                     });
                 }
         });
@@ -170,7 +170,7 @@ app.post('/Login_Password', cors(corsOptions), function (request, response) {
             "ID": 6,
             "Success": false,
             "Error_Message": "Missing Information",
-            "Token":Token
+            "Token":null
         });
     }
 });
