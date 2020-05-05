@@ -5,7 +5,7 @@ const express = require('express');
 const mysql = require('mysql');
 const app = express();
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const saltRounds = 10;
 
 var bodyParser = require('body-parser');
