@@ -7,8 +7,8 @@ const app = express();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const salt = bcrypt.genSaltSync(10);
-const fs=require('fs');
-const keyFile = fs.readFileSync('TOKEN_KEY.json');
+//const fs=require('fs');
+//const keyFile = fs.readFileSync('TOKEN_KEY.json');
 var bodyParser = require('body-parser');
 var cors = require('cors');
 var methodOverride = require('method-override');
@@ -319,10 +319,11 @@ app.post('/StudentByAdminNum', cors(corsOptions), function (request, response) {
 
 function GenerateToken(student){
     return new Promise(resolve =>{
-    if(typeof secretKey !== undefined){
-        jwt.sign({student:student}, secretKey, {algorithm:'HS256'}, function(err, token){
-            resolve(token);
-        })
-    }
+    // if(typeof secretKey !== undefined){
+    //     jwt.sign({student:student}, secretKey, {algorithm:'HS256'}, function(err, token){
+    //         resolve(token);
+    //     })
+    // }
+    resolve("ds");
 })
 }
