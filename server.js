@@ -7,16 +7,12 @@ const app = express();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const salt = bcrypt.genSaltSync(10);
-//const fs=require('fs');
-//const keyFile = fs.readFileSync('TOKEN_KEY.json');
+const fs=require('fs');
+const keyFile = fs.readFileSync('TOKEN_KEY.json');
 var bodyParser = require('body-parser');
 var cors = require('cors');
 var methodOverride = require('method-override');
-//var secretKey = JSON.parse(keyFile).Token_Secret_Key;
-// // Hashing and salting password
-// const bcrypt = require('bcrypt');
-// const saltRounds = 10;
-// Remove cors restriction --important 
+var secretKey = JSON.parse(keyFile).Token_Secret_Key;
 app.use(cors());
 app.use(bodyParser.json());
 app.use(methodOverride());
