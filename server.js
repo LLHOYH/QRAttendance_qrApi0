@@ -102,13 +102,13 @@ app.post('/Login', cors(corsOptions), function (request, response) {
     var msgJson;
 
     if (AdminNumber != null && InputPassword != null && UUID != null) {
+
+         db.query("Select * From Student Where AdminNumber = ?;", [AdminNumber], function (error, result, fields) {
         response.send({
-            AdminNumber:AdminNumber,
-            InputPassword:InputPassword,
-            UUID:UUID
-        });
-        // db.query("Select * From Student Where AdminNumber = ?;", [AdminNumber], function (error, result, fields) {
-        //     if (error) {
+            error:error,
+            result:JSON.stringify(result)
+        })
+            //     if (error) {
         //         response.send(error);
         //     }
         //     else {
@@ -156,7 +156,7 @@ app.post('/Login', cors(corsOptions), function (request, response) {
         //             };
         //         }
         //     }
-        //     })
+             })
     }
     else {
         msgJson = {
