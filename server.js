@@ -104,11 +104,7 @@ app.post('/Login', cors(corsOptions), function (request, response) {
     if (AdminNumber != null && InputPassword != null && UUID != null) {
 
         db.query("Select * From Student Where AdminNumber = ? ;", [AdminNumber], function (error, result, fields) {
-            if (error!=null && error) {
-                response.send(error);
-            }
-            else {
-                response.send(result);
+                response.send(result.length);
                 if (result.length > 0) {
                     if (result[0].Password != null && result[0].UUID != null) {
                         var match = bcrypt.compareSync(InputPassword, result[0].Password);
@@ -152,7 +148,7 @@ app.post('/Login', cors(corsOptions), function (request, response) {
                         "Message": "The Admin Number Does Not Exist"
                     };
                 }
-            }
+            
         });
     }
     else {
