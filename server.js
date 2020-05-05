@@ -206,35 +206,39 @@ app.post('/Register', cors(corsOptions), async function (request, response) {
         UUID: UUID
     });
 
-    if (AdminNumber != null && InputPassword != null && UUID != null) {
-        var HashedPassword = bcrypt.hashSync(InputPassword, salt);
-        db.query("Update Student Set Password = ?, UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [HashedPassword, UUID, RegisterDate, AdminNumber],
-            function (err, result, fields) {
-                if (err) {
-                    response.send({
-                        "Success": false,
-                        "AccountToken": null,
-                        "Error_Message": "Failed to register!"
-                    })
-                }
-                else {
-                    if (result.affectedRows > 0) {
-                        response.send({
-                            "Success": true,
-                            "AccountToken": Token,
-                            "Error_Message": null
-                        })
-                    }
-                    else {
-                        response.send({
-                            "Success": false,
-                            "AccountToken": null,
-                            "Error_Message": "Failed to register!"
-                        })
-                    }
-                }
-            })
-    }
+    response.send({
+        Token:Token
+    })
+
+    // if (AdminNumber != null && InputPassword != null && UUID != null) {
+    //     var HashedPassword = bcrypt.hashSync(InputPassword, salt);
+    //     db.query("Update Student Set Password = ?, UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [HashedPassword, UUID, RegisterDate, AdminNumber],
+    //         function (err, result, fields) {
+    //             if (err) {
+    //                 response.send({
+    //                     "Success": false,
+    //                     "AccountToken": null,
+    //                     "Error_Message": "Failed to register!"
+    //                 })
+    //             }
+    //             else {
+    //                 if (result.affectedRows > 0) {
+    //                     response.send({
+    //                         "Success": true,
+    //                         "AccountToken": Token,
+    //                         "Error_Message": null
+    //                     })
+    //                 }
+    //                 else {
+    //                     response.send({
+    //                         "Success": false,
+    //                         "AccountToken": null,
+    //                         "Error_Message": "Failed to register!"
+    //                     })
+    //                 }
+    //             }
+    //         })
+    // }
 });
 
 app.post('/OverwriteDevice', cors(corsOptions), async function (request, response) {
