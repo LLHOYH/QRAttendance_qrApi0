@@ -156,14 +156,14 @@ app.post('/Login', cors(corsOptions), function (request, response) {
              })
     }
     else {
-        msgJson = {
-            "ID": 6,
-            "Status": false,
-            "Message": "Missing Information"
-        };
+        // msgJson = {
+        //     "ID": 6,
+        //     "Status": false,
+        //     "Message": "Missing Information"
+        // };
     }
 
-    response.send(msgJson);
+    //response.send(msgJson);
 
 });
 
