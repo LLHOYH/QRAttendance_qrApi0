@@ -101,7 +101,6 @@ app.post('/Login', cors(corsOptions), function (request, response) {
 
     var msgJson;
 
-
     if (AdminNumber != null && InputPassword != null && UUID != null) {
 
         db.query("Select * From Student Where AdminNumber = ?;", [AdminNumber], function (error, result, fields) {
@@ -111,8 +110,8 @@ app.post('/Login', cors(corsOptions), function (request, response) {
             else {
                 if (result.length > 0) {
                     if (result[0].Password != null && result[0].UUID != null) {
-                        bcrypt.compare(InputPassword, result[0].Password, function (err, res) {
-                            if (!err) {
+                        var match = bcrypt.compareSync(InputPassword,result[0].Password);
+                            
                                 if (res) {
                                     if (UUID == result[0].UUID) {
                                         msgJson = {
@@ -136,15 +135,6 @@ app.post('/Login', cors(corsOptions), function (request, response) {
                                         "Message": "Wrong Password!"
                                     };
                                 }
-                            }
-                            else {
-                                msgJson = {
-                                    "ID": 5,
-                                    "Status": false,
-                                    "Message": "Error Occurs!"
-                                };
-                            }
-                        })
                     }
                     else {
                         msgJson = {
@@ -156,7 +146,7 @@ app.post('/Login', cors(corsOptions), function (request, response) {
                 }
                 else {
                     msgJson = {
-                        "ID": 6,
+                        "ID": 5,
                         "Status": false,
                         "Message": "The Admin Number Does Not Exist"
                     };
@@ -166,7 +156,7 @@ app.post('/Login', cors(corsOptions), function (request, response) {
     }
     else {
         msgJson = {
-            "ID": 7,
+            "ID": 6,
             "Status": false,
             "Message": "Missing Information"
         };
@@ -226,9 +216,8 @@ app.post('/OverwriteDevice', cors(corsOptions), function (request, response) {
     if (AdminNumber != null && UUID != null && InputPassword!=null) {
         db.query("Select * From Student Where AdminNumber = ?;", [AdminNumber], function (error, result, fields) {
             if (result.length > 0) {
-                bcrypt.compare(InputPassword, result[0].Password, function (err, res) {
-                    if (!err) {
-                        if (res) {
+                var match = bcrypt.compareSync(InputPassword,result[0].Password);
+                        if (match) {
                             db.query("Update Student Set UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [UUID, RegisterDate, AdminNumber],
                                 function (err, result, fields) {
                                     if (!err) {
@@ -242,11 +231,6 @@ app.post('/OverwriteDevice', cors(corsOptions), function (request, response) {
                         else {
                             response.send("Wrong Password!");
                         }
-                    }
-                    else {
-                        response.send("Error Occurs!");
-                    }
-                })
             }
             else {
                 response.send("Error Getting Student Information With Provided Admin Number");
