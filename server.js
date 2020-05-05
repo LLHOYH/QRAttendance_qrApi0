@@ -103,67 +103,67 @@ app.post('/Login', cors(corsOptions), function (request, response) {
 
     if (AdminNumber != null && InputPassword != null && UUID != null) {
 
-         db.query("Select * From Student Where AdminNumber = ? ;", [AdminNumber], function (error, result, fields) {
-            response.send(result);
-            //     if (error) {
-        //         response.send(error);
-        //     }
-        //     else {
-        //         if (result.length > 0) {
-        //             if (result[0].Password != null && result[0].UUID != null) {
-        //                 var match = bcrypt.compareSync(InputPassword,result[0].Password);
-                            
-        //                         if (res) {
-        //                             if (UUID == result[0].UUID) {
-        //                                 msgJson = {
-        //                                     "ID": 1,
-        //                                     "Status": true,
-        //                                     "Message": "Authenticated to Login"
-        //                                 };
-        //                             }
-        //                             else {
-        //                                 msgJson = {
-        //                                     "ID": 2,
-        //                                     "Status": false,
-        //                                     "Message": "This Account Has Already Registered On Another Device!"
-        //                                 };
-        //                             }
-        //                         }
-        //                         else {
-        //                             msgJson = {
-        //                                 "ID": 3,
-        //                                 "Status": false,
-        //                                 "Message": "Wrong Password!"
-        //                             };
-        //                         }
-        //             }
-        //             else {
-        //                 msgJson = {
-        //                     "ID": 4,
-        //                     "Status": false,
-        //                     "Message": "This Account Has Not Registered Yet!"
-        //                 };
-        //             }
-        //         }
-        //         else {
-        //             msgJson = {
-        //                 "ID": 5,
-        //                 "Status": false,
-        //                 "Message": "The Admin Number Does Not Exist"
-        //             };
-        //         }
-        //     }
-             });
+        db.query("Select * From Student Where AdminNumber = ? ;", [AdminNumber], function (error, result, fields) {
+            if (error!=null && error) {
+                response.send(error);
+            }
+            else {
+                response.send(result);
+                if (result.length > 0) {
+                    if (result[0].Password != null && result[0].UUID != null) {
+                        var match = bcrypt.compareSync(InputPassword, result[0].Password);
+
+                        if (res) {
+                            if (UUID == result[0].UUID) {
+                                msgJson = {
+                                    "ID": 1,
+                                    "Status": true,
+                                    "Message": "Authenticated to Login"
+                                };
+                            }
+                            else {
+                                msgJson = {
+                                    "ID": 2,
+                                    "Status": false,
+                                    "Message": "This Account Has Already Registered On Another Device!"
+                                };
+                            }
+                        }
+                        else {
+                            msgJson = {
+                                "ID": 3,
+                                "Status": false,
+                                "Message": "Wrong Password!"
+                            };
+                        }
+                    }
+                    else {
+                        msgJson = {
+                            "ID": 4,
+                            "Status": false,
+                            "Message": "This Account Has Not Registered Yet!"
+                        };
+                    }
+                }
+                else {
+                    msgJson = {
+                        "ID": 5,
+                        "Status": false,
+                        "Message": "The Admin Number Does Not Exist"
+                    };
+                }
+            }
+        });
     }
     else {
-        // msgJson = {
-        //     "ID": 6,
-        //     "Status": false,
-        //     "Message": "Missing Information"
-        // };
+        msgJson = {
+            "ID": 6,
+            "Status": false,
+            "Message": "Missing Information"
+        };
     }
 
-    //response.send(msgJson);
+    response.send(msgJson);
 
 });
 
@@ -189,15 +189,15 @@ app.post('/Register', cors(corsOptions), function (request, response) {
 
     if (AdminNumber != null && InputPassword != null && UUID != null) {
         var HashedPassword = bcrypt.hashSync(InputPassword, salt);
-                db.query("Update Student Set Password = ?, UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [HashedPassword, UUID, RegisterDate, AdminNumber],
-                    function (err, result, fields) {
-                        if (err) {
-                            response.send(err);
-                        }
-                        else {
-                            response.send(JSON.parse(JSON.stringify(result)));
-                        }
-                    })
+        db.query("Update Student Set Password = ?, UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [HashedPassword, UUID, RegisterDate, AdminNumber],
+            function (err, result, fields) {
+                if (err) {
+                    response.send(err);
+                }
+                else {
+                    response.send(JSON.parse(JSON.stringify(result)));
+                }
+            })
     }
 });
 
@@ -208,31 +208,31 @@ app.post('/OverwriteDevice', cors(corsOptions), function (request, response) {
     var UUID = request.body.UUID;
     var RegisterDate = (moment().tz('Asia/Singapore').format('Do-MMMM-YYYY'));
 
-    if (AdminNumber != null && UUID != null && InputPassword!=null) {
+    if (AdminNumber != null && UUID != null && InputPassword != null) {
         db.query("Select * From Student Where AdminNumber = ?;", [AdminNumber], function (error, result, fields) {
             if (result.length > 0) {
-                var match = bcrypt.compareSync(InputPassword,result[0].Password);
-                        if (match) {
-                            db.query("Update Student Set UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [UUID, RegisterDate, AdminNumber],
-                                function (err, result, fields) {
-                                    if (!err) {
-                                        response.send(JSON.parse(JSON.stringify(result)));
-                                    }
-                                    else {
-                                        response.send("Error Occurs When Updating Account Information!");
-                                    }
-                                })
-                        }
-                        else {
-                            response.send("Wrong Password!");
-                        }
+                var match = bcrypt.compareSync(InputPassword, result[0].Password);
+                if (match) {
+                    db.query("Update Student Set UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [UUID, RegisterDate, AdminNumber],
+                        function (err, result, fields) {
+                            if (!err) {
+                                response.send(JSON.parse(JSON.stringify(result)));
+                            }
+                            else {
+                                response.send("Error Occurs When Updating Account Information!");
+                            }
+                        })
+                }
+                else {
+                    response.send("Wrong Password!");
+                }
             }
             else {
                 response.send("Error Getting Student Information With Provided Admin Number");
             }
         })
     }
-    else{
+    else {
         response.send("Missing Information!");
     }
 });
