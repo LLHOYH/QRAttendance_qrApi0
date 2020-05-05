@@ -111,56 +111,53 @@ app.post('/Login', cors(corsOptions), function (request, response) {
 
                         if (match) {
                             if (UUID == result[0].UUID) {
-                                msgJson = {
+                                response.send({
                                     "ID": 1,
                                     "Status": true,
                                     "Message": "Authenticated to Login"
-                                };
+                                });
                             }
                             else {
-                                msgJson = {
+                                response.send({
                                     "ID": 2,
                                     "Status": false,
                                     "Message": "This Account Has Already Registered On Another Device!"
-                                };
+                                });
                             }
                         }
                         else {
-                            msgJson = {
+                            response.send({
                                 "ID": 3,
                                 "Status": false,
                                 "Message": "Wrong Password!"
-                            };
+                            });
                         }
                     }
                     else {
-                        msgJson = {
+                        response.send({
                             "ID": 4,
                             "Status": false,
                             "Message": "This Account Has Not Registered Yet!"
-                        };
+                        });
                     }
                 }
                 else {
-                    msgJson = {
+                    response.send({
                         "ID": 5,
                         "Status": false,
                         "Message": "The Admin Number Does Not Exist"
-                    };
+                    });
                 }
             
         });
     }
     else {
-        msgJson = {
+        response.send({
             "ID": 6,
             "Status": false,
             "Message": "Missing Information"
-        };
+        });
     }
-
-    response.send(msgJson);
-
 });
 
 
