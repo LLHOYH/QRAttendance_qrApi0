@@ -10,6 +10,8 @@ const salt = bcrypt.genSaltSync(10);
 
 const fs=require('fs');
 
+var keyFile = fs.readFileSync('TOKEN_KEY.json');
+var secretKey = JSON.parse(keyFile).Token_Secret_Key;
 
 var bodyParser = require('body-parser');
 var cors = require('cors');
@@ -311,8 +313,6 @@ app.post('/StudentByAdminNum', cors(corsOptions), function (request, response) {
 function GenerateToken(student){
     return new Promise(resolve =>{
 
-        var keyFile = fs.readFileSync('TOKEN_KEY.json');
-        var secretKey = JSON.parse(keyFile).Token_Secret_Key;
 
     if(typeof secretKey !== undefined){
         jwt.sign({student:student}, secretKey, {algorithm:'HS256'}, function(err, token){
