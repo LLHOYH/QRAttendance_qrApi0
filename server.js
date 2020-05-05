@@ -197,24 +197,21 @@ app.post('/Register', cors(corsOptions), function (request, response) {
     var RegisterDate = (moment().tz('Asia/Singapore').format('Do-MMMM-YYYY'));
 
     if (AdminNumber != null && InputPassword != null && UUID != null) {
-        bcrypt.hashSync(InputPassword, salt, function (error, HashedPassword) {
-            response.send(HashedPassword);
-            // if (!error) {
-            //     db.query("Update Student Set Password = ?, UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [HashedPassword, UUID, RegisterDate, AdminNumber],
-            //         function (err, result, fields) {
-            //             if (err) {
-            //                 response.send(err);
-            //             }
-            //             else {
-            //                 response.send(JSON.parse(JSON.stringify(result)));
-            //             }
-            //         })
-            // }
-            // else {
-            //     response.send(error);
-            // }
-
-        })
+        var HashedPassword = bcrypt.hashSync(InputPassword, salt);
+            if (!error) {
+                db.query("Update Student Set Password = ?, UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [HashedPassword, UUID, RegisterDate, AdminNumber],
+                    function (err, result, fields) {
+                        if (err) {
+                            response.send(err);
+                        }
+                        else {
+                            response.send(JSON.parse(JSON.stringify(result)));
+                        }
+                    })
+            }
+            else {
+                response.send(error);
+            }
 
     }
 });
@@ -229,9 +226,9 @@ app.post('/OverwriteDevice', cors(corsOptions), function (request, response) {
     if (AdminNumber != null && UUID != null && InputPassword!=null) {
         db.query("Select * From Student Where AdminNumber = ?;", [AdminNumber], function (error, result, fields) {
             if (result.length > 0) {
-                bcrypt.hashSync(InputPassword, salt, function (err, HashedPassword) {
+                bcrypt.compare(InputPassword, result[0].Password, function (err, res) {
                     if (!err) {
-                        if (HashedPassword == result[0].Password) {
+                        if (res) {
                             db.query("Update Student Set UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [UUID, RegisterDate, AdminNumber],
                                 function (err, result, fields) {
                                     if (!err) {
