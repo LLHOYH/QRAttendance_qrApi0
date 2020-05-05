@@ -12,7 +12,7 @@ const salt = bcrypt.genSaltSync(10);
 var bodyParser = require('body-parser');
 var cors = require('cors');
 var methodOverride = require('method-override');
-var secretKey = JSON.parse(keyFile).Token_Secret_Key;
+//var secretKey = JSON.parse(keyFile).Token_Secret_Key;
 // // Hashing and salting password
 // const bcrypt = require('bcrypt');
 // const saltRounds = 10;
