@@ -209,21 +209,29 @@ app.post('/OverwriteDevice', cors(corsOptions), function (request, response) {
                                 response.send(result);
                             }
                             else {
-                                response.send("Error Occurs When Updating Account Information!");
+                                response.send({
+                                    "Error_Message":"Error Occurs When Updating Account Information!"
+                                });
                             }
                         });
                 }
                 else {
-                    response.send(JSON.parse("Wrong Password!"));
+                    response.send({
+                        "Error_Message":"Wrong Password!"
+                    });
                 }
             }
             else {
-                response.send("Error Getting Student Information With Provided Admin Number");
+                response.send({
+                    "Error_Message":"Error Getting Student Information With Provided Admin Number"
+                });
             }
         })
     }
     else {
-        response.send("Missing Information!");
+        response.send({
+            "Error_Message":"Missing Information!"
+        });
     }
 });
 
