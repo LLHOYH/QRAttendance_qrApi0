@@ -9,7 +9,7 @@ const bcrypt = require('bcryptjs');
 const salt = bcrypt.genSaltSync(10);
 
 const fs=require('fs');
-const keyFile = fs.readFileSync('TOKEN_KEY.json');
+
 
 var bodyParser = require('body-parser');
 var cors = require('cors');
@@ -310,8 +310,11 @@ app.post('/StudentByAdminNum', cors(corsOptions), function (request, response) {
 
 function GenerateToken(student){
     return new Promise(resolve =>{
-        
-    var secretKey = JSON.parse(keyFile).Token_Secret_Key;
+
+        // const keyFile = fs.readFileSync('TOKEN_KEY.json');
+        // var secretKey = JSON.parse(keyFile).Token_Secret_Key;
+
+        var secretKey="QRAttendanceapi0";
 
     if(typeof secretKey !== undefined){
         jwt.sign({student:student}, secretKey, {algorithm:'HS256'}, function(err, token){
