@@ -309,6 +309,17 @@ app.post('/StudentByAdminNum', cors(corsOptions), function (request, response) {
     })
 });
 
+app.post('/UUIDAvailability', cors(corsOptions), function (request, response) {
+    var UUID = request.body.UUID;
+    db.query('Select * from Student Where UUID = ?;', [UUID], function (err, result, fields) {
+        if (err) {
+            console.log('Error message: ', err);
+            throw err;
+        }
+        response.send(JSON.parse(JSON.stringify(result)));
+    })
+});
+
 
 function GenerateToken(student) {
     return new Promise(resolve => {
