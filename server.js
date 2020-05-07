@@ -79,11 +79,45 @@ db.getConnection(async (err) => {
 });
 
 //local test
-app.post('/test', cors(corsOptions), async function (request, response) {
-    response.send(await GenerateToken({
-        AdminNumber:"17",
-        UUID:"15"
-    }))
+app.put('/test', cors(corsOptions), async function (request, response) {
+    var AdminNumber = '173642u';
+    var LessonQRText ='L3452 06/05/2020';
+    var query = 'Select sh.ScheduleID, sh.AttendanceStatus from Schedule sh '+
+    'Inner Join Lesson l On sh.LessonID = l.LessonID '+
+    'Inner Join Student st On sh.AdminNumber = st.AdminNumber '+
+    'Where st.AdminNumber = ? And l.LessonQRText = ? ;';
+    db.query(query, [AdminNumber, LessonQRText], function (err, result, fields) {
+        if(result.length>0){
+            if(result[0].AttendanceStatus == 1){
+                response.send({
+                    "Success": false,
+                    "Error_Message": "Attendance Already Taken!"
+                })
+            }
+            var ClockInTime = (moment().tz('Asia/Singapore').format('HH:mm'));
+            var ScheduleID = result[0].ScheduleID;
+            db.query('Update Schedule Set AttendanceStatus = 1, ClockInTime = ? Where ScheduleID = ? ;',[ClockInTime,ScheduleID],function(error,result,fields){
+                if(result.affectedRows>0){
+                    response.send({
+                        "Success": true,
+                        "Error_Message": null
+                    })
+                }
+                else{
+                    response.send({
+                        "Success": false,
+                        "Error_Message": "Updating Failed!"
+                    })
+                }
+            })
+        }
+        else{
+            response.send({
+                "Success": false,
+                "Error_Message": "The QR Code Is Invalid Or Has Expired!"
+            })
+        }
+    })
 });
 //web url test
 app.get('/Students', cors(corsOptions), function (request, response) {
@@ -323,12 +357,18 @@ app.post('/UUIDAvailability', cors(corsOptions), function (request, response) {
 app.put('/TakeAttendance', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
     var LessonQRText = request.body.LessonQRText;
-    var query = 'Select sh.ScheduleID from Schedule sh '+
+    var query = 'Select sh.ScheduleID, sh.AttendanceStatus from Schedule sh '+
     'Inner Join Lesson l On sh.LessonID = l.LessonID '+
     'Inner Join Student st On sh.AdminNumber = st.AdminNumber '+
     'Where st.AdminNumber = ? And l.LessonQRText = ? ;';
     db.query(query, [AdminNumber, LessonQRText], function (err, result, fields) {
         if(result.length>0){
+            if(result[0].AttendanceStatus == 1){
+                response.send({
+                    "Success": false,
+                    "Error_Message": "Attendance Already Taken!"
+                })
+            }
             var ClockInTime = (moment().tz('Asia/Singapore').format('HH:mm'));
             var ScheduleID = result[0].ScheduleID;
             db.query('Update Schedule Set AttendanceStatus = 1, ClockInTime = ? Where ScheduleID = ? ;',[ClockInTime,ScheduleID],function(error,result,fields){
