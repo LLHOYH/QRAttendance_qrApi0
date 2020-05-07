@@ -349,7 +349,7 @@ app.put('/TakeAttendance', cors(corsOptions), function (request, response) {
         else{
             response.send({
                 "Success": false,
-                "Error_Message": "This QR Code Has Already Expired!"
+                "Error_Message": "The QR Code Is Invalid Or Has Expired!"
             })
         }
     })
