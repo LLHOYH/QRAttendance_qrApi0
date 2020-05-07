@@ -320,6 +320,42 @@ app.post('/UUIDAvailability', cors(corsOptions), function (request, response) {
     })
 });
 
+app.put('/TakeAttendance', cors(corsOptions), function (request, response) {
+    var AdminNumber = request.body.AdminNumber;
+    var LessonQRText = request.body.LessonQRText;
+    var query = 'Select sh.ScheduleID from Schedule sh '+
+    'Inner Join Lesson l On sh.LessonID = l.LessonID '+
+    'Inner Join Student st On sh.AdminNumber = st.AdminNumber '+
+    'Where st.AdminNumber = ? And l.LessonQRText = ? ;';
+    db.query(query, [AdminNumber, LessonQRText], function (err, result, fields) {
+        if(result.length>0){
+            var ClockInTime = (moment().tz('Asia/Singapore').format('HH:mm'));
+            var ScheduleID = result[0].ScheduleID;
+            db.query('Update Schedule Set AttendanceStatus = 1, ClockInTime = ? Where ScheduleID = ? ;',[ClockInTime,ScheduleID],function(error,result,fields){
+                if(result.affectedRows>0){
+                    response.send({
+                        "Success": true,
+                        "Error_Message": null
+                    })
+                }
+                else{
+                    response.send({
+                        "Success": false,
+                        "Error_Message": "Updating Failed!"
+                    })
+                }
+            })
+        }
+        else{
+            response.send({
+                "Success": false,
+                "Error_Message": "This QR Code Has Already Expired!"
+            })
+        }
+    })
+});
+
+
 
 function GenerateToken(student) {
     return new Promise(resolve => {
