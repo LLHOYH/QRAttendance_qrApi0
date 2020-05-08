@@ -61,8 +61,6 @@ app.listen(app.get('port'), function () {
     console.log("listening to Port", app.get("port"));
 });
 
-
-
 // Test for connections
 db.getConnection(async (err) => {
     console.log('Connecting mySQL....');
@@ -70,66 +68,8 @@ db.getConnection(async (err) => {
         throw err;
     }
     console.log('mysql connected....');
-
-    var AdminNumber = '173642u';
-    var LessonQRText ='L3452_07-05-2020';
-
-    var query = 'Select sh.ScheduleID, sh.AttendanceStatus from Schedule sh '+
-    'Inner Join Lesson l On sh.LessonID = l.LessonID '+
-    'Inner Join Student st On sh.AdminNumber = st.AdminNumber '+
-    'Where st.AdminNumber = ? And l.LessonQRText = ? ;';
-    db.query(query, [AdminNumber, LessonQRText], function (err, result, fields) {
-        console.log(result.length);
-        if(result.length>0){
-
-        }
-        else{
-            console.log(here);
-        }
-    })
 });
 
-//local test
-app.put('/test', cors(corsOptions), async function (request, response) {
-    var AdminNumber = '173642u';
-    var LessonQRText ='L3452 06/05/2020';
-    var query = 'Select sh.ScheduleID, sh.AttendanceStatus from Schedule sh '+
-    'Inner Join Lesson l On sh.LessonID = l.LessonID '+
-    'Inner Join Student st On sh.AdminNumber = st.AdminNumber '+
-    'Where st.AdminNumber = ? And l.LessonQRText = ? ;';
-    db.query(query, [AdminNumber, LessonQRText], function (err, result, fields) {
-        if(result.length>0){
-            if(result[0].AttendanceStatus == 1){
-                response.send({
-                    "Success": false,
-                    "Error_Message": "Attendance Already Taken!"
-                })
-            }
-            var ClockInTime = (moment().tz('Asia/Singapore').format('HH:mm'));
-            var ScheduleID = result[0].ScheduleID;
-            db.query('Update Schedule Set AttendanceStatus = 1, ClockInTime = ? Where ScheduleID = ? ;',[ClockInTime,ScheduleID],function(error,result,fields){
-                if(result.affectedRows>0){
-                    response.send({
-                        "Success": true,
-                        "Error_Message": null
-                    })
-                }
-                else{
-                    response.send({
-                        "Success": false,
-                        "Error_Message": "Updating Failed!"
-                    })
-                }
-            })
-        }
-        else{
-            response.send({
-                "Success": false,
-                "Error_Message": "The QR Code Is Invalid Or Has Expired!"
-            })
-        }
-    })
-});
 //web url test
 app.get('/Students', cors(corsOptions), function (request, response) {
     console.log('Connected to /students');
