@@ -71,10 +71,21 @@ db.getConnection(async (err) => {
     }
     console.log('mysql connected....');
 
-    var token = await GenerateToken({ ID: 1, Nmae: "dsadsa" });
-    console.log(token);
-    jwt.verify(token, secretKey, function (err, decoded) {
-        console.log(decoded.student.ID);
+    var AdminNumber = '173642u';
+    var LessonQRText ='L3452_07-05-2020';
+
+    var query = 'Select sh.ScheduleID, sh.AttendanceStatus from Schedule sh '+
+    'Inner Join Lesson l On sh.LessonID = l.LessonID '+
+    'Inner Join Student st On sh.AdminNumber = st.AdminNumber '+
+    'Where st.AdminNumber = ? And l.LessonQRText = ? ;';
+    db.query(query, [AdminNumber, LessonQRText], function (err, result, fields) {
+        console.log(result.length);
+        if(result.length>0){
+
+        }
+        else{
+            console.log(here);
+        }
     })
 });
 
@@ -216,7 +227,8 @@ app.post('/Login_Token', cors(corsOptions), function (request, response) {
                 db.query("Select * From Student Where AdminNumber = ? AND UUID = ? ", [decodedInfo.student.AdminNumber, UUID], function (err, result) {
                     if (result.length > 0) {
                         response.send({
-                            "Authenticated": true
+                            "Authenticated": true,
+                            "AdminNumber":result[0].AdminNumber
                         });
                     }
                 })
@@ -225,7 +237,8 @@ app.post('/Login_Token', cors(corsOptions), function (request, response) {
     }
     else {
         response.send({
-            "Authenticated": false
+            "Authenticated": false,
+            "AdminNumber":null
         });
     }
 });
