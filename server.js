@@ -171,6 +171,12 @@ app.post('/Login_Token', cors(corsOptions), function (request, response) {
                             "AdminNumber":result[0].AdminNumber
                         });
                     }
+                    else {
+                        response.send({
+                            "Authenticated": false,
+                            "AdminNumber":null
+                        });
+                    }
                 })
             }
         });
