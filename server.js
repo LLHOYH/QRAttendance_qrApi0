@@ -77,7 +77,7 @@ db.getConnection(async (err) => {
     'Inner Join Schedule s '+
     'On l.LessonID = s.LessonID '+
     'Where s.AdminNumber = ? '+
-    'Order By l.LessonDate, l.LessonTime';
+    'Order By l.LessonDate desc , l.LessonTime desc';
     
     db.query(query, [AdminNumber], function(error, result, fields){
         console.log(error);
@@ -406,7 +406,7 @@ app.post('/LessonAttendanceByStudent', cors(corsOptions), function(request, resp
     'Inner Join Schedule s '+
     'On l.LessonID = s.LessonID '+
     'Where s.AdminNumber = ? '+
-    'Order By l.LessonDate, l.LessonTime desc';
+    'Order By l.LessonDate desc, l.LessonTime desc';
 
     db.query(query, [AdminNumber], function(error, result, fields){
         if(error){
