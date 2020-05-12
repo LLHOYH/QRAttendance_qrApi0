@@ -68,6 +68,42 @@ db.getConnection(async (err) => {
         throw err;
     }
     console.log('mysql connected....');
+
+    var AdminNumber='173642u';
+    var query = 'Select m.ModuleCode, m.ModuleName, l.LessonID, l.LessonDate, l.LessonTime, s.ScheduleID, s.AttendanceStatus, s.ClockInTime '+
+    'From Module m '+
+    'Inner Join Lesson l '+
+    'On m.ModuleCode = l.ModuleCode '+
+    'Inner Join Schedule s '+
+    'On l.LessonID = s.LessonID '+
+    'Where s.AdminNumber = ? ';
+    
+    db.query(query, [AdminNumber], function(error, result, fields){
+        console.log(error);
+        if(error){
+            console.log({
+                "Success":false,
+                "LessonResults":null,
+                "Error_Message":error
+            })
+        }
+        else if(result.length > 0){
+            console.log({
+                "Success":true,
+                "LessonResults":result,
+                "Error_Message":null
+            })
+        }
+        else if (result.length <= 0){
+            console.log({
+                "Success":true,
+                "LessonResults":result,
+                "Error_Message":"Failed To Get Any Records!"
+            })
+        }
+        
+    })
+
 });
 
 //web url test
@@ -78,6 +114,28 @@ app.get('/Students', cors(corsOptions), function (request, response) {
             console.log('Error message: ', err);
             throw err;
         };
+        response.send(JSON.parse(JSON.stringify(result)));
+    })
+});
+
+app.post('/StudentByAdminNum', cors(corsOptions), function (request, response) {
+    var AdminNumber = request.body.AdminNumber;
+    db.query('Select * from Student Where AdminNumber = ?;', [AdminNumber], function (err, result, fields) {
+        if (err) {
+            console.log('Error message: ', err);
+            throw err;
+        }
+        response.send(JSON.parse(JSON.stringify(result)));
+    })
+});
+
+app.post('/UUIDAvailability', cors(corsOptions), function (request, response) {
+    var UUID = request.body.UUID;
+    db.query('Select * from Student Where UUID = ?;', [UUID], function (err, result, fields) {
+        if (err) {
+            console.log('Error message: ', err);
+            throw err;
+        }
         response.send(JSON.parse(JSON.stringify(result)));
     })
 });
@@ -178,6 +236,12 @@ app.post('/Login_Token', cors(corsOptions), function (request, response) {
                         });
                     }
                 })
+            }
+            else {
+                response.send({
+                    "Authenticated": false,
+                    "AdminNumber":null
+                });
             }
         });
     }
@@ -291,28 +355,6 @@ app.post('/OverwriteDevice', cors(corsOptions), async function (request, respons
     }
 });
 
-app.post('/StudentByAdminNum', cors(corsOptions), function (request, response) {
-    var AdminNumber = request.body.AdminNumber;
-    db.query('Select * from Student Where AdminNumber = ?;', [AdminNumber], function (err, result, fields) {
-        if (err) {
-            console.log('Error message: ', err);
-            throw err;
-        }
-        response.send(JSON.parse(JSON.stringify(result)));
-    })
-});
-
-app.post('/UUIDAvailability', cors(corsOptions), function (request, response) {
-    var UUID = request.body.UUID;
-    db.query('Select * from Student Where UUID = ?;', [UUID], function (err, result, fields) {
-        if (err) {
-            console.log('Error message: ', err);
-            throw err;
-        }
-        response.send(JSON.parse(JSON.stringify(result)));
-    })
-});
-
 app.put('/TakeAttendance', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
     var LessonQRText = request.body.LessonQRText;
@@ -351,6 +393,42 @@ app.put('/TakeAttendance', cors(corsOptions), function (request, response) {
                 "Error_Message": "The QR Code Is Invalid Or Has Expired!"
             })
         }
+    })
+});
+
+app.post('/LessonAttendanceByStudent', cors(corsOptions), function(request, response){
+    var AdminNumber = request.body.AdminNumber;
+    var query = 'Select m.ModuleCode, m.ModuleName, l.LessonID, l.LessonDate, l.LessonTime, s.ScheduleID, s.AttendanceStatus, s.ClockInTime '+
+    'From Module m '+
+    'Inner Join Lesson l '+
+    'On m.ModuleCode = l.ModuleCode '+
+    'Inner Join Schedule s '+
+    'On l.LessonID = s.LessonID '+
+    'Where s.AdminNumber = ? ';
+
+    db.query(query, [AdminNumber], function(error, result, fields){
+        if(error){
+            response.send({
+                "Success":false,
+                "LessonResults":null,
+                "Error_Message":error
+            })
+        }
+        else if(result.length > 0){
+            response.send({
+                "Success":true,
+                "LessonResults":result,
+                "Error_Message":null
+            })
+        }
+        else if (result.length <= 0){
+            response.send({
+                "Success":true,
+                "LessonResults":result,
+                "Error_Message":"Failed To Get Any Records!"
+            })
+        }
+        
     })
 });
 
