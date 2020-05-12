@@ -70,22 +70,23 @@ db.getConnection(async (err) => {
     console.log('mysql connected....');
 
     var AdminNumber='173642u';
+    var RegisterDate = (moment().tz('Asia/Singapore').format('Do-MMMM-YYYY'));
+
     var query = 'Select m.ModuleCode, m.ModuleName, l.LessonID, l.LessonDate, l.LessonTime, s.ScheduleID, s.AttendanceStatus, s.ClockInTime '+
     'From Module m '+
     'Inner Join Lesson l '+
     'On m.ModuleCode = l.ModuleCode '+
     'Inner Join Schedule s '+
     'On l.LessonID = s.LessonID '+
-    'Where s.AdminNumber = ? '+
+    'Where s.AdminNumber = ? AND DATE_FORMAT(l.LessonDate, "%d-%m-%Y") <= ? '+
     'Order By l.LessonDate desc , l.LessonTime desc';
     
-    db.query(query, [AdminNumber], function(error, result, fields){
-        console.log(error);
+    db.query(query, [AdminNumber, RegisterDate], function(error, result, fields){
         if(error){
             console.log({
                 "Success":false,
                 "LessonResults":null,
-                "Error_Message":error
+                "Error_Message":error.sqlMessage
             })
         }
         else if(result.length > 0){
@@ -399,16 +400,18 @@ app.put('/TakeAttendance', cors(corsOptions), function (request, response) {
 
 app.post('/LessonAttendanceByStudent', cors(corsOptions), function(request, response){
     var AdminNumber = request.body.AdminNumber;
+    var RegisterDate = (moment().tz('Asia/Singapore').format('Do-MMMM-YYYY'));
+
     var query = 'Select m.ModuleCode, m.ModuleName, l.LessonID, l.LessonDate, l.LessonTime, s.ScheduleID, s.AttendanceStatus, s.ClockInTime '+
     'From Module m '+
     'Inner Join Lesson l '+
     'On m.ModuleCode = l.ModuleCode '+
     'Inner Join Schedule s '+
     'On l.LessonID = s.LessonID '+
-    'Where s.AdminNumber = ? '+
+    'Where s.AdminNumber = ? AND DATE_FORMAT(l.LessonDate, "%d-%m-%Y") <= ?'+
     'Order By l.LessonDate desc, l.LessonTime desc';
 
-    db.query(query, [AdminNumber], function(error, result, fields){
+    db.query(query, [AdminNumber, RegisterDate], function(error, result, fields){
         if(error){
             response.send({
                 "Success":false,
