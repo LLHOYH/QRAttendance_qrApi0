@@ -416,7 +416,7 @@ app.post('/LessonAttendanceByStudent', cors(corsOptions), function(request, resp
             response.send({
                 "Success":false,
                 "LessonResults":null,
-                "Error_Message":error
+                "Error_Message":error.sqlMessage
             })
         }
         else if(result.length > 0){
