@@ -76,7 +76,8 @@ db.getConnection(async (err) => {
     'On m.ModuleCode = l.ModuleCode '+
     'Inner Join Schedule s '+
     'On l.LessonID = s.LessonID '+
-    'Where s.AdminNumber = ? ';
+    'Where s.AdminNumber = ? '+
+    'Order By l.LessonDate, l.LessonTime';
     
     db.query(query, [AdminNumber], function(error, result, fields){
         console.log(error);
