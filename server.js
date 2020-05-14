@@ -359,7 +359,6 @@ app.post('/OverwriteDevice', cors(corsOptions), async function (request, respons
 
 app.put('/TakeAttendance', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
-    var LessonType = request.body.LessonType;
     var LessonQRText = request.body.LessonQRText;
     var UpdateClockType;
     var query = 'Select sh.ScheduleID, sh.AttendanceStatus, l.LessonType from Schedule sh '+
