@@ -71,41 +71,33 @@ db.getConnection(async (err) => {
 
     var AdminNumber='173642u';
     var RegisterDate = (moment().tz('Asia/Singapore').format('Do-MMMM-YYYY'));
+    var LessonQRText= 'C1234_14-05-2020';
 
-    var query = 'Select m.ModuleCode, m.ModuleName, l.LessonID, l.LessonDate, l.LessonTime, l.LessonVenue, l.LessonType, s.ScheduleID, s.AttendanceStatus, s.ClockInTime, s.ClockOutTime '+
-    'From Module m '+
-    'Inner Join Lesson l '+
-    'On m.ModuleCode = l.ModuleCode '+
-    'Inner Join Schedule s '+
-    'On l.LessonID = s.LessonID '+
-    'Where s.AdminNumber = ? AND DATE_FORMAT(l.LessonDate, "%d-%m-%Y") <= ?'+
-    'Order By l.LessonDate desc, l.LessonTime desc';
-    
-    db.query(query, [AdminNumber, RegisterDate], function(error, result, fields){
-        if(error){
-            console.log({
-                "Success":false,
-                "LessonResults":null,
-                "Error_Message":error.sqlMessage
+    var query = 'Select sh.ScheduleID, sh.AttendanceStatus, l.LessonType, sh.AttendanceStatus, sh.ClockInTime from Schedule sh '+
+    'Inner Join Lesson l On sh.LessonID = l.LessonID '+
+    'Inner Join Student st On sh.AdminNumber = st.AdminNumber '+
+    'Where st.AdminNumber = ? And l.LessonQRText = ? ;';
+
+    db.query(query, [AdminNumber, LessonQRText], function (err, result, fields) {
+        if(result[0].LessonType  != 'FYPJ' && result[0].AttendanceStatus == 1 && result[0].ClockInTime!=null ){
+            response.send({
+                "Success": false,
+                "Error_Message": "Attendance Already Taken!"
             })
         }
-        else if(result.length > 0){
-            console.log({
-                "Success":true,
-                "LessonResults":result,
-                "Error_Message":null
-            })
+        else if(result[0].LessonType  == 'FYPJ' && result[0].AttendanceStatus == 1 && result[0].ClockInTime!=null){
+            UpdateClockType="ClockOut";
         }
-        else if (result.length <= 0){
-            console.log({
-                "Success":false,
-                "LessonResults":result,
-                "Error_Message":"Failed To Get Any Records!"
-            })
+        else{
+            UpdateClockType = 'ClockIn';
         }
-        
+
+        console.log(result[0].LessonType );
+        console.log(result[0].AttendanceStatus );
+        console.log(result[0].ClockInTime );
+        console.log(UpdateClockType);
+
     })
-
 });
 
 //web url test
@@ -361,7 +353,7 @@ app.put('/TakeAttendance', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
     var LessonQRText = request.body.LessonQRText;
     var UpdateClockType;
-    var query = 'Select sh.ScheduleID, sh.AttendanceStatus, l.LessonType from Schedule sh '+
+    var query = 'Select sh.ScheduleID, sh.AttendanceStatus, l.LessonType, sh.AttendanceStatus, sh.ClockInTime from Schedule sh '+
     'Inner Join Lesson l On sh.LessonID = l.LessonID '+
     'Inner Join Student st On sh.AdminNumber = st.AdminNumber '+
     'Where st.AdminNumber = ? And l.LessonQRText = ? ;';
