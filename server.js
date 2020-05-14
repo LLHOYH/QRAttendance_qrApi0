@@ -420,7 +420,7 @@ app.post('/LessonAttendanceByStudent', cors(corsOptions), function(request, resp
     var AdminNumber = request.body.AdminNumber;
     var RegisterDate = (moment().tz('Asia/Singapore').format('Do-MMMM-YYYY'));
 
-    var query = 'Select m.ModuleCode, m.ModuleName, l.LessonID, l.LessonDate, l.LessonTime, l.LessonVenue, l.LessonType, s.ScheduleID, s.AttendanceStatus, s.ClockInTime， s.ClockOutTime '+
+    var query = 'Select m.ModuleCode, m.ModuleName, l.LessonID, l.LessonDate, l.LessonTime, l.LessonVenue, l.LessonType, s.ScheduleID, s.AttendanceStatus, s.ClockInTime, s.ClockOutTime '+
     'From Module m '+
     'Inner Join Lesson l '+
     'On m.ModuleCode = l.ModuleCode '+
