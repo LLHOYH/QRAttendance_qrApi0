@@ -10,7 +10,7 @@ const salt = bcrypt.genSaltSync(10);
 
 const fs = require('fs');
 
-var secretKey="QRAttendanceAPIv0";
+var secretKey = "QRAttendanceAPIv0";
 
 var bodyParser = require('body-parser');
 var cors = require('cors');
@@ -69,32 +69,32 @@ db.getConnection(async (err) => {
     }
     console.log('mysql connected....');
 
-    var AdminNumber='173642u';
+    var AdminNumber = '173642u';
     var RegisterDate = (moment().tz('Asia/Singapore').format('Do-MMMM-YYYY'));
-    var LessonQRText= 'C1234_14-05-2020';
+    var LessonQRText = 'C1234_14-05-2020';
 
-    var query = 'Select sh.ScheduleID, sh.AttendanceStatus, l.LessonType, sh.AttendanceStatus, sh.ClockInTime from Schedule sh '+
-    'Inner Join Lesson l On sh.LessonID = l.LessonID '+
-    'Inner Join Student st On sh.AdminNumber = st.AdminNumber '+
-    'Where st.AdminNumber = ? And l.LessonQRText = ? ;';
+    var query = 'Select sh.ScheduleID, sh.AttendanceStatus, l.LessonType, sh.AttendanceStatus, sh.ClockInTime from Schedule sh ' +
+        'Inner Join Lesson l On sh.LessonID = l.LessonID ' +
+        'Inner Join Student st On sh.AdminNumber = st.AdminNumber ' +
+        'Where st.AdminNumber = ? And l.LessonQRText = ? ;';
 
     db.query(query, [AdminNumber, LessonQRText], function (err, result, fields) {
-        if(result[0].LessonType  != 'FYPJ' && result[0].AttendanceStatus == 1 && result[0].ClockInTime!=null ){
+        if (result[0].LessonType != 'FYPJ' && result[0].AttendanceStatus == 1 && result[0].ClockInTime != null) {
             response.send({
                 "Success": false,
                 "Error_Message": "Attendance Already Taken!"
             })
         }
-        else if(result[0].LessonType  == 'FYPJ' && result[0].AttendanceStatus == 1 && result[0].ClockInTime!=null){
-            UpdateClockType="ClockOut";
+        else if (result[0].LessonType == 'FYPJ' && result[0].AttendanceStatus == 1 && result[0].ClockInTime != null) {
+            UpdateClockType = "ClockOut";
         }
-        else{
+        else {
             UpdateClockType = 'ClockIn';
         }
 
-        console.log(result[0].LessonType );
-        console.log(result[0].AttendanceStatus );
-        console.log(result[0].ClockInTime );
+        console.log(result[0].LessonType);
+        console.log(result[0].AttendanceStatus);
+        console.log(result[0].ClockInTime);
         console.log(UpdateClockType);
 
     })
@@ -220,13 +220,13 @@ app.post('/Login_Token', cors(corsOptions), function (request, response) {
                     if (result.length > 0) {
                         response.send({
                             "Authenticated": true,
-                            "AdminNumber":result[0].AdminNumber
+                            "AdminNumber": result[0].AdminNumber
                         });
                     }
                     else {
                         response.send({
                             "Authenticated": false,
-                            "AdminNumber":null
+                            "AdminNumber": null
                         });
                     }
                 })
@@ -234,7 +234,7 @@ app.post('/Login_Token', cors(corsOptions), function (request, response) {
             else {
                 response.send({
                     "Authenticated": false,
-                    "AdminNumber":null
+                    "AdminNumber": null
                 });
             }
         });
@@ -242,7 +242,7 @@ app.post('/Login_Token', cors(corsOptions), function (request, response) {
     else {
         response.send({
             "Authenticated": false,
-            "AdminNumber":null
+            "AdminNumber": null
         });
     }
 });
@@ -353,97 +353,116 @@ app.put('/TakeAttendance', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
     var LessonQRText = request.body.LessonQRText;
     var UpdateClockType;
-    var query = 'Select sh.ScheduleID, sh.AttendanceStatus, l.LessonType, sh.AttendanceStatus, sh.ClockInTime from Schedule sh '+
-    'Inner Join Lesson l On sh.LessonID = l.LessonID '+
-    'Inner Join Student st On sh.AdminNumber = st.AdminNumber '+
-    'Where st.AdminNumber = ? And l.LessonQRText = ? ;';
-    db.query(query, [AdminNumber, LessonQRText], function (err, result, fields) {
-        if(result.length>0){
-            if(result[0].LessonType  != 'FYPJ' && result[0].AttendanceStatus == 1 && result[0].ClockInTime!=null ){
-                response.send({
-                    "Success": false,
-                    "Error_Message": "Attendance Already Taken!"
-                })
-            }
-            else if(result[0].LessonType  == 'FYPJ' && result[0].AttendanceStatus == 1 && result[0].ClockInTime!=null){
-                UpdateClockType="ClockOut";
-            }
-            else{
-                UpdateClockType = 'ClockIn';
-            }
+    var query = 'Select sh.ScheduleID, sh.AttendanceStatus, l.LessonType, sh.AttendanceStatus, sh.ClockInTime from Schedule sh ' +
+        'Inner Join Lesson l On sh.LessonID = l.LessonID ' +
+        'Inner Join Student st On sh.AdminNumber = st.AdminNumber ' +
+        'Where st.AdminNumber = ? And l.LessonQRText = ? ;';
+    try {
 
-            var ClockedTime = (moment().tz('Asia/Singapore').format('HH:mm'));
-            var ScheduleID = result[0].ScheduleID;
-            var updateQuery;
-
-            if(UpdateClockType=='ClockIn'){
-                updateQuery = 'Update Schedule Set AttendanceStatus = 1, ClockInTime = ? Where ScheduleID = ? ;'
-            }
-            else if (UpdateClockType=='ClockOut'){
-                updateQuery = 'Update Schedule Set AttendanceStatus = 1, ClockOutTime = ? Where ScheduleID = ? ;'
-            }
-
-            db.query(updateQuery,[ClockedTime, ScheduleID],function(error,result,fields){
-                if(result.affectedRows>0){
-                    response.send({
-                        "Success": true,
-                        "Error_Message": null
-                    })
-                }
-                else{
+        db.query(query, [AdminNumber, LessonQRText], function (err, result, fields) {
+            if (result.length > 0) {
+                if (result[0].LessonType != 'FYPJ' && result[0].AttendanceStatus == 1 && result[0].ClockInTime != null) {
                     response.send({
                         "Success": false,
-                        "Error_Message": "Updating Failed!"
+                        "Error_Message": "Attendance Already Taken!"
                     })
                 }
-            })
-        }
-        else{
-            response.send({
-                "Success": false,
-                "Error_Message": "The QR Code Is Invalid Or Has Expired!"
-            })
-        }
-    })
+                else if (result[0].LessonType == 'FYPJ' && result[0].AttendanceStatus == 1 && result[0].ClockInTime != null) {
+                    UpdateClockType = "ClockOut";
+                }
+                else {
+                    UpdateClockType = 'ClockIn';
+                }
+
+                var ClockedTime = (moment().tz('Asia/Singapore').format('HH:mm'));
+                var ScheduleID = result[0].ScheduleID;
+                var updateQuery;
+
+                if (UpdateClockType == 'ClockIn') {
+                    updateQuery = 'Update Schedule Set AttendanceStatus = 1, ClockInTime = ? Where ScheduleID = ? ;'
+                }
+                else if (UpdateClockType == 'ClockOut') {
+                    updateQuery = 'Update Schedule Set AttendanceStatus = 1, ClockOutTime = ? Where ScheduleID = ? ;'
+                }
+
+                db.query(updateQuery, [ClockedTime, ScheduleID], function (error, result, fields) {
+                    if (result.affectedRows > 0) {
+                        response.send({
+                            "Success": true,
+                            "Error_Message": null
+                        })
+                    }
+                    else {
+                        response.send({
+                            "Success": false,
+                            "Error_Message": "Updating Failed!"
+                        })
+                    }
+                })
+            }
+            else {
+                response.send({
+                    "Success": false,
+                    "Error_Message": "The QR Code Is Invalid Or Has Expired!"
+                })
+            }
+        })
+
+    }
+    catch (error) {
+        response.send({
+            "Success": false,
+            "Error_Message": "Unexpected Error Occur!"
+        })
+    }
 });
 
-app.post('/LessonAttendanceByStudent', cors(corsOptions), function(request, response){
+app.post('/LessonAttendanceByStudent', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
     var RegisterDate = (moment().tz('Asia/Singapore').format('Do-MMMM-YYYY'));
 
-    var query = 'Select m.ModuleCode, m.ModuleName, l.LessonID, l.LessonDate, l.LessonTime, l.LessonVenue, l.LessonType, s.ScheduleID, s.AttendanceStatus, s.ClockInTime, s.ClockOutTime '+
-    'From Module m '+
-    'Inner Join Lesson l '+
-    'On m.ModuleCode = l.ModuleCode '+
-    'Inner Join Schedule s '+
-    'On l.LessonID = s.LessonID '+
-    'Where s.AdminNumber = ? AND DATE_FORMAT(l.LessonDate, "%d-%m-%Y") <= ?'+
-    'Order By l.LessonDate desc, l.LessonTime desc';
+    var query = 'Select m.ModuleCode, m.ModuleName, l.LessonID, l.LessonDate, l.LessonTime, l.LessonVenue, l.LessonType, s.ScheduleID, s.AttendanceStatus, s.ClockInTime, s.ClockOutTime ' +
+        'From Module m ' +
+        'Inner Join Lesson l ' +
+        'On m.ModuleCode = l.ModuleCode ' +
+        'Inner Join Schedule s ' +
+        'On l.LessonID = s.LessonID ' +
+        'Where s.AdminNumber = ? AND DATE_FORMAT(l.LessonDate, "%d-%m-%Y") <= ?' +
+        'Order By l.LessonDate desc, l.LessonTime desc';
 
-    db.query(query, [AdminNumber, RegisterDate], function(error, result, fields){
-        if(error){
-            response.send({
-                "Success":false,
-                "LessonResults":null,
-                "Error_Message":error.sqlMessage
-            })
-        }
-        else if(result.length > 0){
-            response.send({
-                "Success":true,
-                "LessonResults":result,
-                "Error_Message":null
-            })
-        }
-        else if (result.length <= 0){
-            response.send({
-                "Success":false,
-                "LessonResults":result,
-                "Error_Message":"Failed To Get Any Records!"
-            })
-        }
-        
-    })
+    try {
+        db.query(query, [AdminNumber, RegisterDate], function (error, result, fields) {
+            if (error) {
+                response.send({
+                    "Success": false,
+                    "LessonResults": null,
+                    "Error_Message": error.sqlMessage
+                })
+            }
+            else if (result.length > 0) {
+                response.send({
+                    "Success": true,
+                    "LessonResults": result,
+                    "Error_Message": null
+                })
+            }
+            else if (result.length <= 0) {
+                response.send({
+                    "Success": false,
+                    "LessonResults": result,
+                    "Error_Message": "Failed To Get Any Records!"
+                })
+            }
+
+        })
+    }
+    catch (error) {
+        response.send({
+            "Success": false,
+            "LessonResults": null,
+            "Error_Message": "Unexpected Error Occur!"
+        })
+    }
 });
 
 
