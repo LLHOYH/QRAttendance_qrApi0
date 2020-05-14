@@ -70,6 +70,15 @@ db.getConnection(async (err) => {
     console.log('mysql connected....');
 
     var AdminNumber = '173642u';
+
+    db.query('Select * from Student Where AdminNumber = ?;', [AdminNumber], function (err, result, fields) {
+        if (err) {
+            console.log('Error message: ', err);
+            throw err;
+        }
+        console.log(JSON.parse(JSON.stringify(result)));
+    })
+
     var RegisterDate = (moment().tz('Asia/Singapore').format('Do-MMMM-YYYY'));
     var LessonQRText = 'C1234_14-05-2020';
 
@@ -114,13 +123,27 @@ app.get('/Students', cors(corsOptions), function (request, response) {
 
 app.post('/StudentByAdminNum', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
-    db.query('Select * from Student Where AdminNumber = ?;', [AdminNumber], function (err, result, fields) {
-        if (err) {
-            console.log('Error message: ', err);
-            throw err;
-        }
-        response.send(JSON.parse(JSON.stringify(result)));
-    })
+    try{
+        db.query('Select * from Student Where AdminNumber = ?;', [AdminNumber], function (err, result, fields) {
+            if (err) {
+                response.send({
+                    "StudentInfo":null,
+                    "Error_Message":err
+                });
+            }
+            response.send({
+                "StudentInfo":result,
+                "Error_Message":null
+            });
+        })
+    }
+    catch(error){
+        response.send({
+            "StudentInfo":null,
+            "Error_Message":error
+        })
+    }
+
 });
 
 app.post('/UUIDAvailability', cors(corsOptions), function (request, response) {
