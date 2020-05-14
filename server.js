@@ -359,22 +359,40 @@ app.post('/OverwriteDevice', cors(corsOptions), async function (request, respons
 
 app.put('/TakeAttendance', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
+    var LessonType = request.body.LessonType;
     var LessonQRText = request.body.LessonQRText;
-    var query = 'Select sh.ScheduleID, sh.AttendanceStatus from Schedule sh '+
+    var UpdateClockType;
+    var query = 'Select sh.ScheduleID, sh.AttendanceStatus, l.LessonType from Schedule sh '+
     'Inner Join Lesson l On sh.LessonID = l.LessonID '+
     'Inner Join Student st On sh.AdminNumber = st.AdminNumber '+
     'Where st.AdminNumber = ? And l.LessonQRText = ? ;';
     db.query(query, [AdminNumber, LessonQRText], function (err, result, fields) {
         if(result.length>0){
-            if(result[0].AttendanceStatus == 1){
+            if(result[0].LessonType  != 'FYPJ' && result[0].AttendanceStatus == 1 && result[0].ClockInTime!=null ){
                 response.send({
                     "Success": false,
                     "Error_Message": "Attendance Already Taken!"
                 })
             }
-            var ClockInTime = (moment().tz('Asia/Singapore').format('HH:mm'));
+            else if(result[0].LessonType  == 'FYPJ' && result[0].AttendanceStatus == 1 && result[0].ClockInTime!=null){
+                UpdateClockType="ClockOut";
+            }
+            else{
+                UpdateClockType = 'ClockIn';
+            }
+
+            var ClockedTime = (moment().tz('Asia/Singapore').format('HH:mm'));
             var ScheduleID = result[0].ScheduleID;
-            db.query('Update Schedule Set AttendanceStatus = 1, ClockInTime = ? Where ScheduleID = ? ;',[ClockInTime,ScheduleID],function(error,result,fields){
+            var updateQuery;
+
+            if(UpdateClockType=='ClockIn'){
+                updateQuery = 'Update Schedule Set AttendanceStatus = 1, ClockInTime = ? Where ScheduleID = ? ;'
+            }
+            else if (UpdateClockType=='ClockOut'){
+                updateQuery = 'Update Schedule Set AttendanceStatus = 1, ClockOutTime = ? Where ScheduleID = ? ;'
+            }
+
+            db.query(updateQuery,[ClockedTime, ScheduleID],function(error,result,fields){
                 if(result.affectedRows>0){
                     response.send({
                         "Success": true,
@@ -402,7 +420,7 @@ app.post('/LessonAttendanceByStudent', cors(corsOptions), function(request, resp
     var AdminNumber = request.body.AdminNumber;
     var RegisterDate = (moment().tz('Asia/Singapore').format('Do-MMMM-YYYY'));
 
-    var query = 'Select m.ModuleCode, m.ModuleName, l.LessonID, l.LessonDate, l.LessonTime, l.LessonVenue, l.LessonType, s.ScheduleID, s.AttendanceStatus, s.ClockInTime '+
+    var query = 'Select m.ModuleCode, m.ModuleName, l.LessonID, l.LessonDate, l.LessonTime, l.LessonVenue, l.LessonType, s.ScheduleID, s.AttendanceStatus, s.ClockInTime， s.ClockOutTime '+
     'From Module m '+
     'Inner Join Lesson l '+
     'On m.ModuleCode = l.ModuleCode '+
