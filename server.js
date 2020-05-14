@@ -446,7 +446,7 @@ app.post('/LessonAttendanceByStudent', cors(corsOptions), function(request, resp
         }
         else if (result.length <= 0){
             response.send({
-                "Success":true,
+                "Success":false,
                 "LessonResults":result,
                 "Error_Message":"Failed To Get Any Records!"
             })
