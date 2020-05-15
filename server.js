@@ -141,7 +141,7 @@ app.post('/UUIDAvailability', cors(corsOptions), function (request, response) {
         else{
             response.send({
                 "StudentInfo":null,
-                "Erro_Message":"Unexpected Error Occur!"
+                "Erro_Message":null
             })
         }
     })
