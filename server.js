@@ -132,18 +132,10 @@ app.post('/UUIDAvailability', cors(corsOptions), function (request, response) {
                 "Error_Message":err.sqlMessage
             })
         }
-        else if(result.length>0){
             response.send({
                 "StudentInfo":result,
                 "Error_Message":null
             })
-        }
-        else{
-            response.send({
-                "StudentInfo":null,
-                "Error_Message":null
-            })
-        }
     })
 });
 
