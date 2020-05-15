@@ -128,20 +128,20 @@ app.post('/UUIDAvailability', cors(corsOptions), function (request, response) {
     db.query('Select * from Student Where UUID = ?;', [UUID], function (err, result, fields) {
         if (err) {
             response.send({
-                "Success":false,
-                "StudentInfo":err.sqlMessage
+                "StudentInfo":null,
+                "Erro_Message":err.sqlMessage
             })
         }
         else if(result.length>0){
             response.send({
-                "Success":true,
-                "StudentInfo":result
+                "StudentInfo":result,
+                "Erro_Message":null
             })
         }
         else{
             response.send({
-                "Success":false,
-                "StudentInfo":null
+                "StudentInfo":null,
+                "Erro_Message":"Unexpected Error Occur!"
             })
         }
     })
