@@ -356,10 +356,19 @@ app.post('/ValidateVerification', cors(corsOptions), function (request, response
                     "Error_Message": err.sqlMessage
                 });
             }
-            response.send({
-                "Success":true,
-                "Error_Message": null
-            });
+            else if(result.length>0){
+                response.send({
+                    "Success":true,
+                    "Error_Message": null
+                });
+            }
+            else{
+                response.send({
+                    "Success":false,
+                    "Error_Message": "The Verification Code is Invalid or Has Expired!"
+                });
+            }
+
         })
     }
     catch (error) {
