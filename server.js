@@ -70,7 +70,7 @@ db.getConnection(async (err) => {
     console.log('mysql connected....');
     var VerificationDateTime = (moment().tz('Asia/Singapore').format('D-MM-YYYY HH:mm:ss'));
     console.log(VerificationDateTime);
-   
+
 });
 
 //web url test
@@ -87,24 +87,24 @@ app.get('/Students', cors(corsOptions), function (request, response) {
 
 app.post('/StudentByAdminNum', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
-    try{
+    try {
         db.query('Select * from Student Where AdminNumber = ?;', [AdminNumber], function (err, result, fields) {
             if (err) {
                 response.send({
-                    "StudentInfo":null,
-                    "Error_Message":err
+                    "StudentInfo": null,
+                    "Error_Message": err.sqlMessage
                 });
             }
             response.send({
-                "StudentInfo":result,
-                "Error_Message":null
+                "StudentInfo": result,
+                "Error_Message": null
             });
         })
     }
-    catch(error){
+    catch (error) {
         response.send({
-            "StudentInfo":null,
-            "Error_Message":error
+            "StudentInfo": null,
+            "Error_Message": error
         })
     }
 
@@ -114,10 +114,23 @@ app.post('/UUIDAvailability', cors(corsOptions), function (request, response) {
     var UUID = request.body.UUID;
     db.query('Select * from Student Where UUID = ?;', [UUID], function (err, result, fields) {
         if (err) {
-            console.log('Error message: ', err);
-            throw err;
+            response.send({
+                "Success":false,
+                "StudentInfo":err.sqlMessage
+            })
         }
-        response.send(JSON.parse(JSON.stringify(result)));
+        else if(result.length>0){
+            response.send({
+                "Success":true,
+                "StudentInfo":result
+            })
+        }
+        else{
+            response.send({
+                "Success":false,
+                "StudentInfo":null
+            })
+        }
     })
 });
 
@@ -132,10 +145,11 @@ app.post('/Login_Password', cors(corsOptions), function (request, response) {
         db.query("Select * From Student Where AdminNumber = ? ;", [AdminNumber], async function (error, result, fields) {
             if (result.length > 0) {
                 if (result[0].Password != null && result[0].UUID != null) {
-                    var match = bcrypt.compareSync(InputPassword, result[0].Password);
 
-                    if (match) {
-                        if (UUID == result[0].UUID) {
+                if (UUID == result[0].UUID) {
+                        var match = bcrypt.compareSync(InputPassword, result[0].Password);
+
+                        if (match) {
                             if (Token == null) { //if user side has no token, on login, will generate a token and return
                                 Token = await GenerateToken({
                                     AdminNumber: AdminNumber,
@@ -151,30 +165,31 @@ app.post('/Login_Password', cors(corsOptions), function (request, response) {
                         }
                         else {
                             response.send({
-                                "ID": 2,
+                                "ID": 3,
                                 "Success": false,
-                                "Error_Message": "This Account Has Already Registered On Another Device!",
+                                "Error_Message": "Wrong Password!",
                                 "AccountToken": null
                             });
                         }
-                    }
-                    else {
-                        response.send({
-                            "ID": 3,
-                            "Success": false,
-                            "Error_Message": "Wrong Password!",
-                            "AccountToken": null
-                        });
-                    }
                 }
                 else {
                     response.send({
-                        "ID": 4,
+                        "ID": 2,
                         "Success": false,
-                        "Error_Message": "This Account Has Not Registered Yet!",
+                        "Error_Message": "This Account Has Already Registered On Another Device!",
                         "AccountToken": null
                     });
                 }
+            }
+            else {
+                response.send({
+                    "ID": 4,
+                    "Success": false,
+                    "Error_Message": "This Account Has Not Registered Yet!",
+                    "AccountToken": null
+                });
+            }
+
             }
             else {
                 response.send({
@@ -276,7 +291,7 @@ app.post('/Register', cors(corsOptions), async function (request, response) {
     }
 });
 
-app.put('/ForgetPassword', cors(corsOptions), function (request, response) {
+app.put('/UpdateVerification', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
     var VerificationCode = request.body.VerificationCode;
     var CurrentDateTime = (moment().tz('Asia/Singapore').format('YYYY-MM-D HH:mm:ss'));
@@ -285,23 +300,23 @@ app.put('/ForgetPassword', cors(corsOptions), function (request, response) {
 
     try {
         db.query(query, [AdminNumber, VerificationCode, CurrentDateTime], function (err, result, fields) {
-            if(err){
+            if (err) {
                 response.send({
                     "Success": false,
                     "Error_Message": err.sqlMessage
-                })
+                });
             }
             else if (result.affectedRows > 0) {
                 response.send({
                     "Success": true,
                     "Error_Message": null
-                })
+                });
             }
             else {
                 response.send({
                     "Success": false,
                     "Error_Message": "Updating Failed!"
-                })
+                });
             }
         })
     }
@@ -309,7 +324,74 @@ app.put('/ForgetPassword', cors(corsOptions), function (request, response) {
         response.send({
             "Success": false,
             "Error_Message": "Unexpected Error Occur!"
+        });
+    }
+});
+
+app.post('/ValidateVerification', cors(corsOptions), function (request, response) {
+    var AdminNumber = request.body.AdminNumber;
+    var VerificationCode = request.body.VerificationCode;
+    var CurrentDateTime = (moment().tz('Asia/Singapore').format('YYYY-MM-D HH:mm:ss'));
+    var query = 'Select * from Student Where AdminNumber = ? AND VerificationCode = ? AND (Date_Add(VerificationDateTime), INTERVAL 10 MINUTE) >= ?;';
+    var parameter = [AdminNumber, VerificationCode, CurrentDateTime];
+
+    try {
+        db.query(query, parameter, function (err, result, fields) {
+            if (err) {
+                response.send({
+                    "Success":false,
+                    "Error_Message": err.sqlMessage
+                });
+            }
+            response.send({
+                "Success":true,
+                "Error_Message": null
+            });
         })
+    }
+    catch (error) {
+        response.send({
+            "Success":false,
+            "Error_Message": error
+        })
+    }
+});
+
+app.put('/UpdatePassword', cors(corsOptions), function (request, response) {
+    var AdminNumber = request.body.AdminNumber;
+    var Password = request.body.Password;
+    var HashedPassword = bcrypt.hashSync(Password, salt);
+
+    var query = 'Update Student Set Password = ? Where AdminNumber = ?;';
+    var parameter = [HashedPassword, AdminNumber];
+    
+    try {
+        db.query(query, parameter , function (err, result, fields) {
+            if (err) {
+                response.send({
+                    "Success": false,
+                    "Error_Message": err.sqlMessage
+                });
+            }
+            else if (result.affectedRows > 0) {
+                response.send({
+                    "Success": true,
+                    "Error_Message": null
+                });
+            }
+            else {
+                response.send({
+                    "Success": false,
+                    "Error_Message": "Updating Failed!"
+                });
+            }
+        })
+    }
+    catch (error) {
+        response.send({
+            "Success": false,
+            "Error_Message": "Unexpected Error Occur!"
+        });
     }
 });
 
