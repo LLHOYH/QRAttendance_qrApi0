@@ -68,45 +68,9 @@ db.getConnection(async (err) => {
         throw err;
     }
     console.log('mysql connected....');
-
-    var AdminNumber = '173642u';
-
-    db.query('Select * from Student Where AdminNumber = ?;', [AdminNumber], function (err, result, fields) {
-        if (err) {
-            console.log('Error message: ', err);
-            throw err;
-        }
-        console.log(JSON.parse(JSON.stringify(result)));
-    })
-
-    var RegisterDate = (moment().tz('Asia/Singapore').format('Do-MMMM-YYYY'));
-    var LessonQRText = 'C1234_14-05-2020';
-
-    var query = 'Select sh.ScheduleID, sh.AttendanceStatus, l.LessonType, sh.AttendanceStatus, sh.ClockInTime from Schedule sh ' +
-        'Inner Join Lesson l On sh.LessonID = l.LessonID ' +
-        'Inner Join Student st On sh.AdminNumber = st.AdminNumber ' +
-        'Where st.AdminNumber = ? And l.LessonQRText = ? ;';
-
-    db.query(query, [AdminNumber, LessonQRText], function (err, result, fields) {
-        if (result[0].LessonType != 'FYPJ' && result[0].AttendanceStatus == 1 && result[0].ClockInTime != null) {
-            response.send({
-                "Success": false,
-                "Error_Message": "Attendance Already Taken!"
-            })
-        }
-        else if (result[0].LessonType == 'FYPJ' && result[0].AttendanceStatus == 1 && result[0].ClockInTime != null) {
-            UpdateClockType = "ClockOut";
-        }
-        else {
-            UpdateClockType = 'ClockIn';
-        }
-
-        console.log(result[0].LessonType);
-        console.log(result[0].AttendanceStatus);
-        console.log(result[0].ClockInTime);
-        console.log(UpdateClockType);
-
-    })
+    var VerificationDateTime = (moment().tz('Asia/Singapore').format('D-MM-YYYY HH:mm:ss'));
+    console.log(VerificationDateTime);
+   
 });
 
 //web url test
@@ -275,7 +239,7 @@ app.post('/Register', cors(corsOptions), async function (request, response) {
     var AdminNumber = request.body.AdminNumber;
     var InputPassword = request.body.InputPassword;
     var UUID = request.body.UUID;
-    var RegisterDate = (moment().tz('Asia/Singapore').format('Do-MMMM-YYYY'));
+    var CurrentDate = (moment().tz('Asia/Singapore').format('D-MM-YYYY'));
     var Token = await GenerateToken({
         AdminNumber: AdminNumber,
         UUID: UUID
@@ -283,7 +247,7 @@ app.post('/Register', cors(corsOptions), async function (request, response) {
 
     if (AdminNumber != null && InputPassword != null && UUID != null) {
         var HashedPassword = bcrypt.hashSync(InputPassword, salt);
-        db.query("Update Student Set Password = ?, UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [HashedPassword, UUID, RegisterDate, AdminNumber],
+        db.query("Update Student Set Password = ?, UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [HashedPassword, UUID, CurrentDate, AdminNumber],
             function (err, result, fields) {
                 if (err) {
                     response.send({
@@ -312,12 +276,49 @@ app.post('/Register', cors(corsOptions), async function (request, response) {
     }
 });
 
+app.put('/ForgetPassword', cors(corsOptions), function (request, response) {
+    var AdminNumber = request.body.AdminNumber;
+    var VerificationCode = request.body.VerificationCode;
+    var CurrentDateTime = (moment().tz('Asia/Singapore').format('YYYY-MM-D HH:mm:ss'));
+
+    var query = 'Update Student Set VerificationCode = ? , VerificationDateTime = ? Where AdminNumber = ?';
+
+    try {
+        db.query(query, [AdminNumber, VerificationCode, CurrentDateTime], function (err, result, fields) {
+            if(err){
+                response.send({
+                    "Success": false,
+                    "Error_Message": err.sqlMessage
+                })
+            }
+            else if (result.affectedRows > 0) {
+                response.send({
+                    "Success": true,
+                    "Error_Message": null
+                })
+            }
+            else {
+                response.send({
+                    "Success": false,
+                    "Error_Message": "Updating Failed!"
+                })
+            }
+        })
+    }
+    catch (error) {
+        response.send({
+            "Success": false,
+            "Error_Message": "Unexpected Error Occur!"
+        })
+    }
+});
+
 app.post('/OverwriteDevice', cors(corsOptions), async function (request, response) {
     // Values from JSON in register.page.ts
     var AdminNumber = request.body.AdminNumber;
     var InputPassword = request.body.InputPassword;
     var UUID = request.body.UUID;
-    var RegisterDate = (moment().tz('Asia/Singapore').format('Do-MMMM-YYYY'));
+    var CurrentDate = (moment().tz('Asia/Singapore').format('D-MM-YYYY'));
     var Token = await GenerateToken({
         AdminNumber: AdminNumber,
         UUID: UUID
@@ -328,7 +329,7 @@ app.post('/OverwriteDevice', cors(corsOptions), async function (request, respons
             if (result.length > 0) {
                 var match = bcrypt.compareSync(InputPassword, result[0].Password);
                 if (match) {
-                    db.query("Update Student Set UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [UUID, RegisterDate, AdminNumber],
+                    db.query("Update Student Set UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [UUID, CurrentDate, AdminNumber],
                         function (err, result, fields) {
                             if (result.affectedRows > 0) {
                                 response.send({
@@ -442,7 +443,7 @@ app.put('/TakeAttendance', cors(corsOptions), function (request, response) {
 
 app.post('/LessonAttendanceByStudent', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
-    var RegisterDate = (moment().tz('Asia/Singapore').format('Do-MMMM-YYYY'));
+    var CurrentDate = (moment().tz('Asia/Singapore').format('D-MM-YYYY'));
 
     var query = 'Select m.ModuleCode, m.ModuleName, l.LessonID, l.LessonDate, l.LessonTime, l.LessonVenue, l.LessonType, s.ScheduleID, s.AttendanceStatus, s.ClockInTime, s.ClockOutTime ' +
         'From Module m ' +
@@ -454,7 +455,7 @@ app.post('/LessonAttendanceByStudent', cors(corsOptions), function (request, res
         'Order By l.LessonDate desc, l.LessonTime desc';
 
     try {
-        db.query(query, [AdminNumber, RegisterDate], function (error, result, fields) {
+        db.query(query, [AdminNumber, CurrentDate], function (error, result, fields) {
             if (error) {
                 response.send({
                     "Success": false,
