@@ -67,10 +67,23 @@ db.getConnection(async (err) => {
     if (err) {
         throw err;
     }
-    console.log('mysql connected....');
-    var VerificationDateTime = (moment().tz('Asia/Singapore').format('D-MM-YYYY HH:mm:ss'));
-    console.log(VerificationDateTime);
+    var AdminNumber = '173642u';
+    var VerificationCode = '987456';
+    var CurrentDateTime = (moment().tz('Asia/Singapore').format('YYYY-MM-D HH:mm:ss'));
+    console.log(CurrentDateTime)
+    var query = 'Update Student Set VerificationCode = ? , VerificationDateTime = ? Where AdminNumber = ?';
 
+    try {
+        db.query(query, [VerificationCode, CurrentDateTime,AdminNumber], function (err, result, fields) {
+            console.log(result);
+        })
+    }
+    catch (error) {
+        console.log({
+            "Success": false,
+            "Error_Message": "Unexpected Error Occur!"
+        });
+    }
 });
 
 //web url test
@@ -297,9 +310,9 @@ app.put('/UpdateVerification', cors(corsOptions), function (request, response) {
     var CurrentDateTime = (moment().tz('Asia/Singapore').format('YYYY-MM-D HH:mm:ss'));
 
     var query = 'Update Student Set VerificationCode = ? , VerificationDateTime = ? Where AdminNumber = ?';
-
+    var parameter = [VerificationCode, CurrentDateTime, AdminNumber];
     try {
-        db.query(query, [AdminNumber, VerificationCode, CurrentDateTime], function (err, result, fields) {
+        db.query(query, parameter, function (err, result, fields) {
             if (err) {
                 response.send({
                     "Success": false,
