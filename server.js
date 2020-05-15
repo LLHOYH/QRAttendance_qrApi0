@@ -345,7 +345,7 @@ app.post('/ValidateVerification', cors(corsOptions), function (request, response
     var AdminNumber = request.body.AdminNumber;
     var VerificationCode = request.body.VerificationCode;
     var CurrentDateTime = (moment().tz('Asia/Singapore').format('YYYY-MM-D HH:mm:ss'));
-    var query = 'Select * from Student Where AdminNumber = ? AND VerificationCode = ? AND (Date_Add(VerificationDateTime), INTERVAL 10 MINUTE) >= ?;';
+    var query = 'Select * from Student Where AdminNumber = ? AND VerificationCode = ? AND Date_Add(VerificationDateTime, INTERVAL 10 MINUTE) >= ?;';
     var parameter = [AdminNumber, VerificationCode, CurrentDateTime];
 
     try {
