@@ -69,21 +69,20 @@ db.getConnection(async (err) => {
     }
     var AdminNumber = '173642u';
     var VerificationCode = '987456';
-    var CurrentDateTime = (moment().tz('Asia/Singapore').format('YYYY-MM-D HH:mm:ss'));
-    console.log(CurrentDateTime)
-    var query = 'Update Student Set VerificationCode = ? , VerificationDateTime = ? Where AdminNumber = ?';
+    var LessonQRText = 'C1234_21-05-2020';
+    var ValidDateTime = (moment().tz('Asia/Singapore').format('YYYY-MM-D HH:mm:ss'));
+    var query = 'Select sh.ScheduleID, sh.AttendanceStatus, l.LessonType, sh.AttendanceStatus, sh.ClockInTime from Schedule sh ' +
+        'Inner Join Lesson l On sh.LessonID = l.LessonID ' +
+        'Inner Join Student st On sh.AdminNumber = st.AdminNumber ' +
+        'Where st.AdminNumber = ? And l.LessonQRText = ? AND ' +
+        '((l.LessonType != "FYPJ" And l.QRValidUntil <= ?) OR ' +
+        '(l.LessonType = "FYPJ" And DATE_FORMAT(l.QRValidUntil, "%Y-%m-%d") = DATE_FORMAT(?, "%Y-%m-%d") )) ;';
+    var parameter = [AdminNumber, LessonQRText, ValidDateTime, ValidDateTime];
 
-    try {
-        db.query(query, [VerificationCode, CurrentDateTime,AdminNumber], function (err, result, fields) {
+        db.query(query, parameter, function (err, result, fields) {
+            console.log(err);
             console.log(result);
         })
-    }
-    catch (error) {
-        console.log({
-            "Success": false,
-            "Error_Message": "Unexpected Error Occur!"
-        });
-    }
 });
 
 //web url test
@@ -472,14 +471,18 @@ app.post('/OverwriteDevice', cors(corsOptions), async function (request, respons
 app.put('/TakeAttendance', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
     var LessonQRText = request.body.LessonQRText;
+    var ValidDateTime = (moment().tz('Asia/Singapore').format('YYYY-MM-D HH:mm:ss'));
     var UpdateClockType;
     var query = 'Select sh.ScheduleID, sh.AttendanceStatus, l.LessonType, sh.AttendanceStatus, sh.ClockInTime from Schedule sh ' +
         'Inner Join Lesson l On sh.LessonID = l.LessonID ' +
         'Inner Join Student st On sh.AdminNumber = st.AdminNumber ' +
-        'Where st.AdminNumber = ? And l.LessonQRText = ? ;';
+        'Where st.AdminNumber = ? And l.LessonQRText = ? AND ' +
+        '((l.LessonType != "FYPJ" And l.QRValidUntil <= ?) OR ' +
+        '(l.LessonType = "FYPJ" And DATE_FORMAT(l.QRValidUntil, "%Y-%m-%d") = DATE_FORMAT(?, "%Y-%m-%d") )) ;';
+    var parameter = [AdminNumber, LessonQRText, ValidDateTime, ValidDateTime];
     try {
 
-        db.query(query, [AdminNumber, LessonQRText], function (err, result, fields) {
+        db.query(query, parameter, function (err, result, fields) {
             if (result.length > 0) {
                 if (result[0].LessonType != 'FYPJ' && result[0].AttendanceStatus == 1 && result[0].ClockInTime != null) {
                     response.send({
