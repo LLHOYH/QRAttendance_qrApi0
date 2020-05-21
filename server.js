@@ -67,22 +67,26 @@ db.getConnection(async (err) => {
     if (err) {
         throw err;
     }
-    var AdminNumber = '173642u';
-    var VerificationCode = '987456';
-    var LessonQRText = 'C1234_21-05-2020';
-    var ValidDateTime = (moment().tz('Asia/Singapore').format('YYYY-MM-D HH:mm:ss'));
-    var query = 'Select sh.ScheduleID, sh.AttendanceStatus, l.LessonType, sh.AttendanceStatus, sh.ClockInTime from Schedule sh ' +
-        'Inner Join Lesson l On sh.LessonID = l.LessonID ' +
-        'Inner Join Student st On sh.AdminNumber = st.AdminNumber ' +
-        'Where st.AdminNumber = ? And l.LessonQRText = ? AND ' +
-        '((l.LessonType != "FYPJ" And l.QRValidUntil <= ?) OR ' +
-        '(l.LessonType = "FYPJ" And DATE_FORMAT(l.QRValidUntil, "%Y-%m-%d") = DATE_FORMAT(?, "%Y-%m-%d") )) ;';
-    var parameter = [AdminNumber, LessonQRText, ValidDateTime, ValidDateTime];
-
-        db.query(query, parameter, function (err, result, fields) {
-            console.log(err);
-            console.log(result);
-        })
+    db.query('Select * From Location_Function_Setting;', function (err, result, fields) {
+        if (err) {
+            console.log({
+                "Success":false,
+                "Setting_Results":null
+            })
+        }
+        else if(result.length>0){
+            console.log({
+                "Success":true,
+                "Setting_Results":result[0]
+            })
+        }
+        else{
+            console.log({
+                "Success":false,
+                "Setting_Results":null
+            })
+        }
+    })
 });
 
 //web url test
@@ -596,7 +600,7 @@ app.get('/LocationSettings', cors(corsOptions), function (request, response) {
                 "Setting_Results":null
             })
         }
-        else if(result>0){
+        else if(result.length>0){
             response.send({
                 "Success":true,
                 "Setting_Results":result[0]
