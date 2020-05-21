@@ -588,6 +588,29 @@ app.post('/LessonAttendanceByStudent', cors(corsOptions), function (request, res
     }
 });
 
+app.get('/LocationSettings', cors(corsOptions), function (request, response) {
+    db.query('Select * From Location_Function_Setting;', function (err, result, fields) {
+        if (err) {
+            response.send({
+                "Success":false,
+                "Setting_Results":null
+            })
+        }
+        else if(result>0){
+            response.send({
+                "Success":true,
+                "Setting_Results":result[0]
+            })
+        }
+        else{
+            response.send({
+                "Success":false,
+                "Setting_Results":null
+            })
+        }
+    })
+});
+
 
 
 function GenerateToken(student) {
