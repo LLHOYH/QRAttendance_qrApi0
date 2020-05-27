@@ -626,30 +626,6 @@ app.post('/LessonAttendanceByStudent', cors(corsOptions), function (request, res
     }
 });
 
-//Gets the location settings info to see if using location feature to take attendance is enabled, and get all the coordinates.
-app.get('/LocationSettings', cors(corsOptions), function (request, response) {
-    db.query('Select * From Location_Function_Setting;', function (err, result, fields) {
-        if (err) {
-            response.send({
-                "Success":false,
-                "Setting_Results":null
-            })
-        }
-        else if(result.length>0){
-            response.send({
-                "Success":true,
-                "Setting_Results":result[0]
-            })
-        }
-        else{
-            response.send({
-                "Success":false,
-                "Setting_Results":null
-            })
-        }
-    })
-});
-
 //Gets all the lessons for the day that the student has yet to attend.
 app.post('/LessonForTheDay',cors(corsOptions),function(request,response){
 
@@ -692,6 +668,31 @@ app.post('/LessonForTheDay',cors(corsOptions),function(request,response){
         }
     })
 })
+
+//Gets the location settings info to see if using location feature to take attendance is enabled, and get all the coordinates.
+app.get('/LocationSettings', cors(corsOptions), function (request, response) {
+    db.query('Select * From Location_Function_Setting;', function (err, result, fields) {
+        if (err) {
+            response.send({
+                "Success":false,
+                "Setting_Results":null
+            })
+        }
+        else if(result.length>0){
+            response.send({
+                "Success":true,
+                "Setting_Results":result[0]
+            })
+        }
+        else{
+            response.send({
+                "Success":false,
+                "Setting_Results":null
+            })
+        }
+    })
+});
+
 
 
 
