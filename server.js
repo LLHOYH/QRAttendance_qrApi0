@@ -67,34 +67,22 @@ db.getConnection(async (err) => {
     if (err) {
         throw err;
     }
+    var AdminNumber = '173642u';
+
     var CurrentDate = (moment().tz('Asia/Singapore').format('YYYY-MM-D'));
     var CurrentTime = (moment().tz('Asia/Singapore').format('HH:mm:ss'));
 
-    // var query = 'Select m.ModuleCode, m.ModuleName, l.LessonID, l.LessonDate, l.LessonTime, l.LessonVenue, l.LessonType, s.ScheduleID, s.AttendanceStatus, s.ClockInTime, s.ClockOutTime ' +
-    // 'From Module m ' +
-    // 'Inner Join Lesson l ' +
-    // 'On m.ModuleCode = l.ModuleCode ' +
-    // 'Inner Join Schedule s ' +
-    // 'On l.LessonID = s.LessonID ' +
-    // 'Where s.AdminNumber = ? AND DATE_FORMAT(l.LessonDate, "%d-%m-%Y") <= ?' +
-    // 'Order By l.LessonDate desc, l.LessonTime desc';
-
-    var query  = "select Distinct l.* from Lesson l " +
+    var query  = 'Select Distinct l.* From Lesson l ' +
     'Inner Join Schedule sh On l.LessonID = sh.LessonID '+
     'Inner Join Student st On st.AdminNumber = sh.AdminNumber '+
     'Where LessonDate = ? '+
     "And AddTime(LessonTime, Concat(Convert(LessonDuration, char),':0:0')) >= Convert(?, Time) "+
-    'And st.AdminNumber = "173642u"';
+    'And st.AdminNumber = ? ' +
+    'Order By l.LessonTime asc';
 
-    // "Where SubTime(LessonTime, '0:10') < " +
-    // "Convert(AddTime(utc_timeStamp(), '08:00:00'), Date) " +
-    // "And SubTime(AddTime(LessonTime, Concat(Convert(LessonDuration, char),':0:0')), '0:10') > " +
-    // "Convert(AddTime(utc_timeStamp(), '08:00:00'), Date) " +
-    // "And LessonDate = Convert(AddTime(utc_timeStamp(), '08:00:00'), Date) " +
-    // "And StaffID = @staffID";
+    var parameter=[CurrentDate, CurrentTime, AdminNumber];
 
-    var parameter=[CurrentDate, CurrentTime];
-    db.query(query ,parameter, function (err, result, fields) {
+    db.query(query, parameter, function (err, result, fields) {
         console.log(result);
     })
 });
@@ -639,7 +627,8 @@ app.post('/LessonForTheDay',cors(corsOptions),function(request,response){
     'Inner Join Student st On st.AdminNumber = sh.AdminNumber '+
     'Where LessonDate = ? '+
     "And AddTime(LessonTime, Concat(Convert(LessonDuration, char),':0:0')) >= Convert(?, Time) "+
-    'And st.AdminNumber = ?';
+    'And st.AdminNumber = ? ' +
+    'Order By l.LessonTime;';
 
     var parameter=[CurrentDate, CurrentTime, AdminNumber];
 
