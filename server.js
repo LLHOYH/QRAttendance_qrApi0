@@ -622,9 +622,10 @@ app.post('/LessonForTheDay',cors(corsOptions),function(request,response){
     var CurrentDate = (moment().tz('Asia/Singapore').format('YYYY-MM-D'));
     var CurrentTime = (moment().tz('Asia/Singapore').format('HH:mm:ss'));
 
-    var query  = 'Select Distinct l.* From Lesson l ' +
+    var query  = 'Select Distinct l.*, m.ModuleName From Lesson l ' +
     'Inner Join Schedule sh On l.LessonID = sh.LessonID '+
     'Inner Join Student st On st.AdminNumber = sh.AdminNumber '+
+    'Inner Join Module m On l.ModuleCode = m.ModuleCode ' +
     'Where LessonDate = ? '+
     "And AddTime(LessonTime, Concat(Convert(LessonDuration, char),':0:0')) >= Convert(?, Time) "+
     'And st.AdminNumber = ? ' +
