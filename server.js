@@ -67,40 +67,63 @@ db.getConnection(async (err) => {
     if (err) {
         throw err;
     }
-    db.query('Select * From Location_Function_Setting;', function (err, result, fields) {
+    var CurrentDate = (moment().tz('Asia/Singapore').format('YYYY-MM-D'));
+    var CurrentTime = (moment().tz('Asia/Singapore').format('HH:mm:ss'));
+
+    // var query = 'Select m.ModuleCode, m.ModuleName, l.LessonID, l.LessonDate, l.LessonTime, l.LessonVenue, l.LessonType, s.ScheduleID, s.AttendanceStatus, s.ClockInTime, s.ClockOutTime ' +
+    // 'From Module m ' +
+    // 'Inner Join Lesson l ' +
+    // 'On m.ModuleCode = l.ModuleCode ' +
+    // 'Inner Join Schedule s ' +
+    // 'On l.LessonID = s.LessonID ' +
+    // 'Where s.AdminNumber = ? AND DATE_FORMAT(l.LessonDate, "%d-%m-%Y") <= ?' +
+    // 'Order By l.LessonDate desc, l.LessonTime desc';
+
+    var query  = "select Distinct l.* from Lesson l " +
+    'Inner Join Schedule sh On l.LessonID = sh.LessonID '+
+    'Inner Join Student st On st.AdminNumber = sh.AdminNumber '+
+    'Where LessonDate = ? '+
+    "And AddTime(LessonTime, Concat(Convert(LessonDuration, char),':0:0')) >= Convert(?, Time) "+
+    'And st.AdminNumber = "173642u"';
+
+    // "Where SubTime(LessonTime, '0:10') < " +
+    // "Convert(AddTime(utc_timeStamp(), '08:00:00'), Date) " +
+    // "And SubTime(AddTime(LessonTime, Concat(Convert(LessonDuration, char),':0:0')), '0:10') > " +
+    // "Convert(AddTime(utc_timeStamp(), '08:00:00'), Date) " +
+    // "And LessonDate = Convert(AddTime(utc_timeStamp(), '08:00:00'), Date) " +
+    // "And StaffID = @staffID";
+
+    var parameter=[CurrentDate, CurrentTime];
+    db.query(query ,parameter, function (err, result, fields) {
+        console.log(result);
+    })
+});
+
+//web url test, this method is nvr used.
+app.get('/TestConnection', cors(corsOptions), function (request, response) {
+    db.query('select AdminNumber from Student;', function (err, result, fields) {
         if (err) {
-            console.log({
-                "Success":false,
-                "Setting_Results":null
+            response.send({
+                "Success":success,
+                "Message":err
             })
         }
         else if(result.length>0){
-            console.log({
+            response.send({
                 "Success":true,
-                "Setting_Results":result[0]
+                "Message":"API Working. Database Working. Data Gotten"
             })
         }
         else{
-            console.log({
-                "Success":false,
-                "Setting_Results":null
+            response.send({
+                "Success":true,
+                "Message":"API Working. Database Working. But No Data"
             })
         }
     })
 });
 
-//web url test
-app.get('/Students', cors(corsOptions), function (request, response) {
-    console.log('Connected to /students');
-    db.query('select * from Student;', function (err, result, fields) {
-        if (err) {
-            console.log('Error message: ', err);
-            throw err;
-        };
-        response.send(JSON.parse(JSON.stringify(result)));
-    })
-});
-
+//get a student's information by his adminNumber.
 app.post('/StudentByAdminNum', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
     try {
@@ -126,6 +149,7 @@ app.post('/StudentByAdminNum', cors(corsOptions), function (request, response) {
 
 });
 
+//check if student's mobile UUID has already been registered by other device.
 app.post('/UUIDAvailability', cors(corsOptions), function (request, response) {
     var UUID = request.body.UUID;
     db.query('Select * from Student Where UUID = ?;', [UUID], function (err, result, fields) {
@@ -142,6 +166,7 @@ app.post('/UUIDAvailability', cors(corsOptions), function (request, response) {
     })
 });
 
+//Called when login through admin number and password. Authenticate if credentials are correct
 app.post('/Login_Password', cors(corsOptions), function (request, response) {
 
     var AdminNumber = request.body.AdminNumber;
@@ -158,7 +183,7 @@ app.post('/Login_Password', cors(corsOptions), function (request, response) {
                         var match = bcrypt.compareSync(InputPassword, result[0].Password);
 
                         if (match) {
-                            if (Token == null) { //if user side has no token, on login, will generate a token and return
+                            if (Token == null) { //if student side has no token, on login, will generate a token and return
                                 Token = await GenerateToken({
                                     AdminNumber: AdminNumber,
                                     UUID: UUID
@@ -219,6 +244,7 @@ app.post('/Login_Password', cors(corsOptions), function (request, response) {
     }
 });
 
+//Called when login through Token. It is a automatically login function and operates when app if launch.
 app.post('/Login_Token', cors(corsOptions), function (request, response) {
 
     var UUID = request.body.UUID;
@@ -257,6 +283,7 @@ app.post('/Login_Token', cors(corsOptions), function (request, response) {
     }
 });
 
+//Called when student wants to register account
 app.post('/Register', cors(corsOptions), async function (request, response) {
     // Values from JSON in register.page.ts
     var AdminNumber = request.body.AdminNumber;
@@ -299,6 +326,7 @@ app.post('/Register', cors(corsOptions), async function (request, response) {
     }
 });
 
+//Called when student requires a verification code, which is updated in database in this api.  (send to their email in other api)
 app.put('/UpdateVerification', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
     var VerificationCode = request.body.VerificationCode;
@@ -336,6 +364,7 @@ app.put('/UpdateVerification', cors(corsOptions), function (request, response) {
     }
 });
 
+//Called when need to verify if they verification code is correct and not expired
 app.post('/ValidateVerification', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
     var VerificationCode = request.body.VerificationCode;
@@ -374,6 +403,7 @@ app.post('/ValidateVerification', cors(corsOptions), function (request, response
     }
 });
 
+//Called when student wants to change password
 app.put('/UpdatePassword', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
     var Password = request.body.Password;
@@ -412,6 +442,7 @@ app.put('/UpdatePassword', cors(corsOptions), function (request, response) {
     }
 });
 
+//Called when student changes device - UUID
 app.post('/OverwriteDevice', cors(corsOptions), async function (request, response) {
     // Values from JSON in register.page.ts
     var AdminNumber = request.body.AdminNumber;
@@ -472,6 +503,7 @@ app.post('/OverwriteDevice', cors(corsOptions), async function (request, respons
     }
 });
 
+//Called when student use QRScanner to take attendance for a lesson
 app.put('/TakeAttendance', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
     var LessonQRText = request.body.LessonQRText;
@@ -544,6 +576,8 @@ app.put('/TakeAttendance', cors(corsOptions), function (request, response) {
     }
 });
 
+//Called to show all the lessons that student has attended for that semester or yet to attend on that day
+//Shows only lessons on that day and before.
 app.post('/LessonAttendanceByStudent', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
     var CurrentDate = (moment().tz('Asia/Singapore').format('D-MM-YYYY'));
@@ -592,6 +626,7 @@ app.post('/LessonAttendanceByStudent', cors(corsOptions), function (request, res
     }
 });
 
+//Gets the location settings info to see if using location feature to take attendance is enabled, and get all the coordinates.
 app.get('/LocationSettings', cors(corsOptions), function (request, response) {
     db.query('Select * From Location_Function_Setting;', function (err, result, fields) {
         if (err) {
@@ -614,6 +649,51 @@ app.get('/LocationSettings', cors(corsOptions), function (request, response) {
         }
     })
 });
+
+//Gets all the lessons for the day that the student has yet to attend.
+app.post('/LessonForTheDay',cors(corsOptions),function(request,response){
+
+    var AdminNumber = request.body.AdminNumber;
+
+    var CurrentDate = (moment().tz('Asia/Singapore').format('YYYY-MM-D'));
+    var CurrentTime = (moment().tz('Asia/Singapore').format('HH:mm:ss'));
+
+    var query  = 'Select Distinct l.* From Lesson l ' +
+    'Inner Join Schedule sh On l.LessonID = sh.LessonID '+
+    'Inner Join Student st On st.AdminNumber = sh.AdminNumber '+
+    'Where LessonDate = ? '+
+    "And AddTime(LessonTime, Concat(Convert(LessonDuration, char),':0:0')) >= Convert(?, Time) "+
+    'And st.AdminNumber = ?';
+
+    var parameter=[CurrentDate, CurrentTime, AdminNumber];
+
+    db.query(query, parameter, function (err, result, fields) {
+        if (err) {
+            response.send({
+                "Success":false,
+                "Lesson_Results":null,
+                "Error_Message":err.sqlMessage
+            })
+        }
+        else if(result.length>0){
+            response.send({
+                "Success":true,
+                "Lesson_Results":result,
+                "Error_Message":null
+            })
+        }
+        else{
+            response.send({
+                "Success":false,
+                "Lesson_Results":null,
+                "Error_Message":null
+
+            })
+        }
+    })
+})
+
+
 
 
 
