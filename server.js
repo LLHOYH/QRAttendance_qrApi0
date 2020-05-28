@@ -683,6 +683,13 @@ app.get('/LocationSettings', cors(corsOptions), function (request, response) {
     })
 });
 
+//Gets the settings info on the total number of times allowed for a student to register account on new devices per sem
+app.get('/ChangeDeviceSettings', cors(corsOptions), function (request, response) {
+    response.send({
+        "Success":true,
+        "Setting_Results":{NumberOfTimes:3}
+    });
+});
 
 
 
