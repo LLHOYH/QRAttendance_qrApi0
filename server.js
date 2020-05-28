@@ -687,7 +687,7 @@ app.get('/LocationSettings', cors(corsOptions), function (request, response) {
 app.get('/ChangeDeviceSettings', cors(corsOptions), function (request, response) {
     response.send({
         "Success":true,
-        "NumberOfTimes:3"
+        "NumberOfTimes":3
     });
 });
 
