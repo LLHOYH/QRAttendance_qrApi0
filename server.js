@@ -503,7 +503,13 @@ app.post('/OverwriteDevice', cors(corsOptions), async function (request, respons
             if (result.length > 0) {
                 var match = bcrypt.compareSync(InputPassword, result[0].Password);
                 if (match) {
-                    db.query("Update Student Set UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [UUID, CurrentDate, AdminNumber],
+                    
+                    var query = 'Update Student Set UUID = ?, LastRegisterDate = ?, ' +
+                    'TimesOfOverwriteDevice = (TimesOfOverwriteDevice + 1) Where AdminNumber = ?';
+
+                    var parameter = [UUID, CurrentDate, AdminNumber];
+
+                    db.query(query, parameter,
                         function (err, result, fields) {
                             if (result.affectedRows > 0) {
                                 response.send({
