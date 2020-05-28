@@ -67,24 +67,38 @@ db.getConnection(async (err) => {
     if (err) {
         throw err;
     }
-    var AdminNumber = '173642u';
+    var AdminNumber = '17342u';
 
-    var CurrentDate = (moment().tz('Asia/Singapore').format('YYYY-MM-D'));
-    var CurrentTime = (moment().tz('Asia/Singapore').format('HH:mm:ss'));
+    var Password = "Longhao0830";
 
-    var query  = 'Select Distinct l.* From Lesson l ' +
-    'Inner Join Schedule sh On l.LessonID = sh.LessonID '+
-    'Inner Join Student st On st.AdminNumber = sh.AdminNumber '+
-    'Where LessonDate = ? '+
-    "And AddTime(LessonTime, Concat(Convert(LessonDuration, char),':0:0')) >= Convert(?, Time) "+
-    'And st.AdminNumber = ? ' +
-    'Order By l.LessonTime asc';
+    if (AdminNumber != null && Password != null) {
+        db.query("Select Password From Student Where AdminNumber = ? ;", [AdminNumber], async function (error, result, fields) {
+                if (result.length>0) {
 
-    var parameter=[CurrentDate, CurrentTime, AdminNumber];
+                        var match = bcrypt.compareSync(Password, result[0].Password);
 
-    db.query(query, parameter, function (err, result, fields) {
-        console.log(result);
-    })
+                        if (match) {
+                            console.log({
+                                "Success": true,
+                                "PasswordIsCorrect": true
+                            });
+                        }
+                        else {
+                            console.log({
+                                "Success": true,
+                                "PasswordIsCorrect": false
+                            });
+                        }
+                }
+                else {
+                    console.log({
+                        "Success": false,
+                        "PasswordIsCorrect": false
+                    });
+                }
+                console.log(result.length);
+            });
+        }
 });
 
 //web url test, this method is nvr used.
@@ -388,6 +402,48 @@ app.post('/ValidateVerification', cors(corsOptions), function (request, response
             "Success":false,
             "Error_Message": error
         })
+    }
+});
+
+//Called when student wants to change password and they have to verify their old password first.
+app.post('/VerifyPassword', cors(corsOptions), function (request, response) {
+
+    var AdminNumber = request.body.AdminNumber;
+    var Password = request.body.Password;
+
+    try{
+    if (AdminNumber != null && Password != null) {
+        db.query("Select Password From Student Where AdminNumber = ? ;", [AdminNumber], async function (error, result, fields) {
+                if (result.length>0) {
+
+                        var match = bcrypt.compareSync(Password, result[0].Password);
+
+                        if (match) {
+                            response.send({
+                                "Success": true,
+                                "PasswordIsCorrect": true
+                            });
+                        }
+                        else {
+                            response.send({
+                                "Success": true,
+                                "PasswordIsCorrect": false
+                            });
+                        }
+                }
+                else {
+                    response.send({
+                        "Success": false,
+                        "PasswordIsCorrect": false
+                    });
+                }
+            });
+        }
+    }catch(err){
+        response.send({
+            "Success": false,
+            "PasswordIsCorrect": false
+        });
     }
 });
 
