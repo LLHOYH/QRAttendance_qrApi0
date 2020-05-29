@@ -747,10 +747,26 @@ app.get('/LocationSettings', cors(corsOptions), function (request, response) {
 
 //Gets the settings info on the total number of times allowed for a student to register account on new devices per sem
 app.get('/ChangeDeviceSettings', cors(corsOptions), function (request, response) {
-    response.send({
-        "Success":true,
-        "Setting_Results":{ChangeDeviceEnabled: true, NumberOfTimes:3}
-    });
+    db.query('Select * From OverwriteDevice_Setting;', function (err, result, fields) {
+        if (err) {
+            response.send({
+                "Success":false,
+                "Setting_Results":null
+            })
+        }
+        else if(result.length>0){
+            response.send({
+                "Success":true,
+                "Setting_Results":result[0]
+            })
+        }
+        else{
+            response.send({
+                "Success":false,
+                "Setting_Results":null
+            })
+        }
+    })
 });
 
 
