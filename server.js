@@ -67,7 +67,7 @@ db.getConnection(async (err) => {
     if (err) {
         throw err;
     }
-    var AdminNumber = '17342u';
+    var AdminNumber = '173642u';
     var CurrentDate = (moment().tz('Asia/Singapore').format('YYYY-MM-DD'));
 
     var query = 'Select m.ModuleCode, m.ModuleName, l.LessonID, l.LessonDate, l.LessonTime, l.LessonVenue, l.LessonType, s.ScheduleID, s.AttendanceStatus, s.ClockInTime, s.ClockOutTime ' +
@@ -76,12 +76,10 @@ db.getConnection(async (err) => {
     'On m.ModuleCode = l.ModuleCode ' +
     'Inner Join Schedule s ' +
     'On l.LessonID = s.LessonID ' +
-    'Where s.AdminNumber = ? AND DATE_FORMAT(l.LessonDate, "%d-%m-%Y") <= ?' +
+    'Where s.AdminNumber = ? AND DATE_FORMAT(l.LessonDate, "%Y-%m-%d") <= ?' +
     'Order By l.LessonDate desc, l.LessonTime desc';
 
-     query = 'Select * From Lesson Where DATE_FORMAT(l.LessonDate, "%d-%m-%Y") <= ?;';
-
-    db.query(query, [ CurrentDate], function (error, result, fields) {
+    db.query(query, [AdminNumber, CurrentDate], function (error, result, fields) {
         console.log(result);
         console.log(CurrentDate);
     });
@@ -624,7 +622,7 @@ app.post('/LessonAttendanceByStudent', cors(corsOptions), function (request, res
         'On m.ModuleCode = l.ModuleCode ' +
         'Inner Join Schedule s ' +
         'On l.LessonID = s.LessonID ' +
-        'Where s.AdminNumber = ? AND DATE_FORMAT(l.LessonDate, "%d-%m-%Y") <= ?' +
+        'Where s.AdminNumber = ? AND DATE_FORMAT(l.LessonDate, "%Y-%m-%d") <= ?' +
         'Order By l.LessonDate desc, l.LessonTime desc';
 
     try {
