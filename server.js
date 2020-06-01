@@ -68,37 +68,23 @@ db.getConnection(async (err) => {
         throw err;
     }
     var AdminNumber = '17342u';
+    var CurrentDate = (moment().tz('Asia/Singapore').format('YYYY-MM-DD'));
 
-    var Password = "Longhao0830";
+    var query = 'Select m.ModuleCode, m.ModuleName, l.LessonID, l.LessonDate, l.LessonTime, l.LessonVenue, l.LessonType, s.ScheduleID, s.AttendanceStatus, s.ClockInTime, s.ClockOutTime ' +
+    'From Module m ' +
+    'Inner Join Lesson l ' +
+    'On m.ModuleCode = l.ModuleCode ' +
+    'Inner Join Schedule s ' +
+    'On l.LessonID = s.LessonID ' +
+    'Where s.AdminNumber = ? AND DATE_FORMAT(l.LessonDate, "%d-%m-%Y") <= ?' +
+    'Order By l.LessonDate desc, l.LessonTime desc';
 
-    if (AdminNumber != null && Password != null) {
-        db.query("Select Password From Student Where AdminNumber = ? ;", [AdminNumber], async function (error, result, fields) {
-                if (result.length>0) {
+     query = 'Select * From Lesson Where DATE_FORMAT(l.LessonDate, "%d-%m-%Y") <= ?;';
 
-                        var match = bcrypt.compareSync(Password, result[0].Password);
-
-                        if (match) {
-                            console.log({
-                                "Success": true,
-                                "PasswordIsCorrect": true
-                            });
-                        }
-                        else {
-                            console.log({
-                                "Success": true,
-                                "PasswordIsCorrect": false
-                            });
-                        }
-                }
-                else {
-                    console.log({
-                        "Success": false,
-                        "PasswordIsCorrect": false
-                    });
-                }
-                console.log(result.length);
-            });
-        }
+    db.query(query, [ CurrentDate], function (error, result, fields) {
+        console.log(result);
+        console.log(CurrentDate);
+    });
 });
 
 //web url test, this method is nvr used.
@@ -291,7 +277,7 @@ app.post('/Register', cors(corsOptions), async function (request, response) {
     var AdminNumber = request.body.AdminNumber;
     var InputPassword = request.body.InputPassword;
     var UUID = request.body.UUID;
-    var CurrentDate = (moment().tz('Asia/Singapore').format('D-MM-YYYY'));
+    var CurrentDate = (moment().tz('Asia/Singapore').format('DD-MM-YYYY'));
     var Token = await GenerateToken({
         AdminNumber: AdminNumber,
         UUID: UUID
@@ -332,7 +318,7 @@ app.post('/Register', cors(corsOptions), async function (request, response) {
 app.put('/UpdateVerification', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
     var VerificationCode = request.body.VerificationCode;
-    var CurrentDateTime = (moment().tz('Asia/Singapore').format('YYYY-MM-D HH:mm:ss'));
+    var CurrentDateTime = (moment().tz('Asia/Singapore').format('YYYY-MM-DD HH:mm:ss'));
 
     var query = 'Update Student Set VerificationCode = ? , VerificationDateTime = ? Where AdminNumber = ?';
     var parameter = [VerificationCode, CurrentDateTime, AdminNumber];
@@ -370,7 +356,7 @@ app.put('/UpdateVerification', cors(corsOptions), function (request, response) {
 app.post('/ValidateVerification', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
     var VerificationCode = request.body.VerificationCode;
-    var CurrentDateTime = (moment().tz('Asia/Singapore').format('YYYY-MM-D HH:mm:ss'));
+    var CurrentDateTime = (moment().tz('Asia/Singapore').format('YYYY-MM-DD HH:mm:ss'));
     var query = 'Select * from Student Where AdminNumber = ? AND VerificationCode = ? AND Date_Add(VerificationDateTime, INTERVAL 10 MINUTE) >= ?;';
     var parameter = [AdminNumber, VerificationCode, CurrentDateTime];
 
@@ -492,7 +478,7 @@ app.post('/OverwriteDevice', cors(corsOptions), async function (request, respons
     var AdminNumber = request.body.AdminNumber;
     var InputPassword = request.body.InputPassword;
     var UUID = request.body.UUID;
-    var CurrentDate = (moment().tz('Asia/Singapore').format('D-MM-YYYY'));
+    var CurrentDate = (moment().tz('Asia/Singapore').format('DD-MM-YYYY'));
     var Token = await GenerateToken({
         AdminNumber: AdminNumber,
         UUID: UUID
@@ -557,7 +543,7 @@ app.post('/OverwriteDevice', cors(corsOptions), async function (request, respons
 app.put('/TakeAttendance', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
     var LessonQRText = request.body.LessonQRText;
-    var ValidDateTime = (moment().tz('Asia/Singapore').format('YYYY-MM-D HH:mm:ss'));
+    var ValidDateTime = (moment().tz('Asia/Singapore').format('YYYY-MM-DD HH:mm:ss'));
     var UpdateClockType;
     var query = 'Select sh.ScheduleID, sh.AttendanceStatus, l.LessonType, sh.AttendanceStatus, sh.ClockInTime from Schedule sh ' +
         'Inner Join Lesson l On sh.LessonID = l.LessonID ' +
@@ -630,7 +616,7 @@ app.put('/TakeAttendance', cors(corsOptions), function (request, response) {
 //Shows only lessons on that day and before.
 app.post('/LessonAttendanceByStudent', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
-    var CurrentDate = (moment().tz('Asia/Singapore').format('D-MM-YYYY'));
+    var CurrentDate = (moment().tz('Asia/Singapore').format('DD-MM-YYYY'));
 
     var query = 'Select m.ModuleCode, m.ModuleName, l.LessonID, l.LessonDate, l.LessonTime, l.LessonVenue, l.LessonType, s.ScheduleID, s.AttendanceStatus, s.ClockInTime, s.ClockOutTime ' +
         'From Module m ' +
@@ -681,7 +667,7 @@ app.post('/LessonForTheDay',cors(corsOptions),function(request,response){
 
     var AdminNumber = request.body.AdminNumber;
 
-    var CurrentDate = (moment().tz('Asia/Singapore').format('YYYY-MM-D'));
+    var CurrentDate = (moment().tz('Asia/Singapore').format('YYYY-MM-DD'));
     var CurrentTime = (moment().tz('Asia/Singapore').format('HH:mm:ss'));
 
     var query  = 'Select Distinct l.*, m.ModuleName From Lesson l ' +
