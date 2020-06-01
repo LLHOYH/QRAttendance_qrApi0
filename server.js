@@ -275,7 +275,7 @@ app.post('/Register', cors(corsOptions), async function (request, response) {
     var AdminNumber = request.body.AdminNumber;
     var InputPassword = request.body.InputPassword;
     var UUID = request.body.UUID;
-    var CurrentDate = (moment().tz('Asia/Singapore').format('DD-MM-YYYY'));
+    var CurrentDate = (moment().tz('Asia/Singapore').format('YYYY-MM-DD'));
     var Token = await GenerateToken({
         AdminNumber: AdminNumber,
         UUID: UUID
@@ -283,7 +283,7 @@ app.post('/Register', cors(corsOptions), async function (request, response) {
 
     if (AdminNumber != null && InputPassword != null && UUID != null) {
         var HashedPassword = bcrypt.hashSync(InputPassword, salt);
-        db.query("Update Student Set Password = ?, UUID = ?, LastRegisterDate = ? Where AdminNumber = ?;", [HashedPassword, UUID, CurrentDate, AdminNumber],
+        db.query('Update Student Set Password = ?, UUID = ?, LastRegisterDate = DATE_FORMAT(?, "%Y-%m-%d") Where AdminNumber = ?;', [HashedPassword, UUID, CurrentDate, AdminNumber],
             function (err, result, fields) {
                 if (err) {
                     response.send({
@@ -476,7 +476,7 @@ app.post('/OverwriteDevice', cors(corsOptions), async function (request, respons
     var AdminNumber = request.body.AdminNumber;
     var InputPassword = request.body.InputPassword;
     var UUID = request.body.UUID;
-    var CurrentDate = (moment().tz('Asia/Singapore').format('DD-MM-YYYY'));
+    var CurrentDate = (moment().tz('Asia/Singapore').format('YYYY-MM-DD'));
     var Token = await GenerateToken({
         AdminNumber: AdminNumber,
         UUID: UUID
@@ -488,7 +488,7 @@ app.post('/OverwriteDevice', cors(corsOptions), async function (request, respons
                 var match = bcrypt.compareSync(InputPassword, result[0].Password);
                 if (match) {
                     
-                    var query = 'Update Student Set UUID = ?, LastRegisterDate = ?, ' +
+                    var query = 'Update Student Set UUID = ?, LastRegisterDate = DATE_FORMAT(?, "%Y-%m-%d"), ' +
                     'TimesOfOverwriteDevice = (TimesOfOverwriteDevice + 1) Where AdminNumber = ?';
 
                     var parameter = [UUID, CurrentDate, AdminNumber];
@@ -622,7 +622,7 @@ app.post('/LessonAttendanceByStudent', cors(corsOptions), function (request, res
         'On m.ModuleCode = l.ModuleCode ' +
         'Inner Join Schedule s ' +
         'On l.LessonID = s.LessonID ' +
-        'Where s.AdminNumber = ? AND DATE_FORMAT(l.LessonDate, "%Y-%m-%d") <= ?' +
+        'Where s.AdminNumber = ? AND DATE_FORMAT(l.LessonDate, "%Y-%m-%d") <= DATE_FORMAT(?, "%Y-%m-%d") ' +
         'Order By l.LessonDate desc, l.LessonTime desc';
 
     try {
