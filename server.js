@@ -622,7 +622,7 @@ app.post('/LessonAttendanceByStudent', cors(corsOptions), function (request, res
         'On m.ModuleCode = l.ModuleCode ' +
         'Inner Join Schedule s ' +
         'On l.LessonID = s.LessonID ' +
-        'Where s.AdminNumber = ? AND DATE_FORMAT(l.LessonDate, "%Y-%m-%d") <= ?' +
+        'Where s.AdminNumber = ? AND DATE_FORMAT(l.LessonDate, "%d-%m-%Y") <= ?' +
         'Order By l.LessonDate desc, l.LessonTime desc';
 
     try {
