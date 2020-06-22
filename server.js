@@ -70,19 +70,22 @@ db.getConnection(async (err) => {
     var AdminNumber = '173642u';
     var CurrentDate = (moment().tz('Asia/Singapore').format('YYYY-MM-DD'));
 
-    var query = 'Select m.ModuleCode, m.ModuleName, l.LessonID, l.LessonDate, l.LessonTime, l.LessonVenue, l.LessonType, s.ScheduleID, s.AttendanceStatus, s.ClockInTime, s.ClockOutTime ' +
-    'From Module m ' +
-    'Inner Join Lesson l ' +
-    'On m.ModuleCode = l.ModuleCode ' +
-    'Inner Join Schedule s ' +
-    'On l.LessonID = s.LessonID ' +
-    'Where s.AdminNumber = ? AND DATE_FORMAT(l.LessonDate, "%Y-%m-%d") <= ?' +
-    'Order By l.LessonDate desc, l.LessonTime desc';
+    var query = 'Update Student Set UUID = ?, LastRegisterDate = DATE_FORMAT(?, "%Y-%m-%d") ' +
+    'Where AdminNumber = ?';
 
-    db.query(query, [AdminNumber, CurrentDate], function (error, result, fields) {
-        console.log(result);
-        console.log(CurrentDate);
-    });
+db.query('Select * From OverwriteDevice_Setting;', function (err, result, fields) {   //check if overwritesetting is enabled. if yes, everytime overwrite will add 1 chance.
+    
+        console.log(result[0].OverwriteEnabled);
+        if (result[0].OverwriteEnabled == 1){
+            
+            query = 'Update Student Set UUID = ?, LastRegisterDate = DATE_FORMAT(?, "%Y-%m-%d"), ' +
+            'TimesOfOverwriteDevice = (TimesOfOverwriteDevice + 1) Where AdminNumber = ?';
+        }
+console.log(query);
+
+
+});
+
 });
 
 //web url test, this method is nvr used.
@@ -90,20 +93,20 @@ app.get('/TestConnection', cors(corsOptions), function (request, response) {
     db.query('select AdminNumber from Student;', function (err, result, fields) {
         if (err) {
             response.send({
-                "Success":success,
-                "Message":err
+                "Success": success,
+                "Message": err
             })
         }
-        else if(result.length>0){
+        else if (result.length > 0) {
             response.send({
-                "Success":true,
-                "Message":"API Working. Database Working. Data Gotten"
+                "Success": true,
+                "Message": "API Working. Database Working. Data Gotten"
             })
         }
-        else{
+        else {
             response.send({
-                "Success":true,
-                "Message":"API Working. Database Working. But No Data"
+                "Success": true,
+                "Message": "API Working. Database Working. But No Data"
             })
         }
     })
@@ -141,14 +144,14 @@ app.post('/UUIDAvailability', cors(corsOptions), function (request, response) {
     db.query('Select * from Student Where UUID = ?;', [UUID], function (err, result, fields) {
         if (err) {
             response.send({
-                "StudentInfo":null,
-                "Error_Message":err.sqlMessage
+                "StudentInfo": null,
+                "Error_Message": err.sqlMessage
             })
         }
-            response.send({
-                "StudentInfo":result,
-                "Error_Message":null
-            })
+        response.send({
+            "StudentInfo": result,
+            "Error_Message": null
+        })
     })
 });
 
@@ -165,7 +168,7 @@ app.post('/Login_Password', cors(corsOptions), function (request, response) {
             if (result.length > 0) {
                 if (result[0].Password != null && result[0].UUID != null) {
 
-                if (UUID == result[0].UUID) {
+                    if (UUID == result[0].UUID) {
                         var match = bcrypt.compareSync(InputPassword, result[0].Password);
 
                         if (match) {
@@ -190,24 +193,24 @@ app.post('/Login_Password', cors(corsOptions), function (request, response) {
                                 "AccountToken": null
                             });
                         }
+                    }
+                    else {
+                        response.send({
+                            "ID": 2,
+                            "Success": false,
+                            "Error_Message": "This Account Has Already Registered On Another Device!",
+                            "AccountToken": null
+                        });
+                    }
                 }
                 else {
                     response.send({
-                        "ID": 2,
+                        "ID": 4,
                         "Success": false,
-                        "Error_Message": "This Account Has Already Registered On Another Device!",
+                        "Error_Message": "This Account Has Not Registered Yet!",
                         "AccountToken": null
                     });
                 }
-            }
-            else {
-                response.send({
-                    "ID": 4,
-                    "Success": false,
-                    "Error_Message": "This Account Has Not Registered Yet!",
-                    "AccountToken": null
-                });
-            }
 
             }
             else {
@@ -362,19 +365,19 @@ app.post('/ValidateVerification', cors(corsOptions), function (request, response
         db.query(query, parameter, function (err, result, fields) {
             if (err) {
                 response.send({
-                    "Success":false,
+                    "Success": false,
                     "Error_Message": err.sqlMessage
                 });
             }
-            else if(result.length>0){
+            else if (result.length > 0) {
                 response.send({
-                    "Success":true,
+                    "Success": true,
                     "Error_Message": null
                 });
             }
-            else{
+            else {
                 response.send({
-                    "Success":false,
+                    "Success": false,
                     "Error_Message": "The Verification Code is Invalid or Has Expired!"
                 });
             }
@@ -383,7 +386,7 @@ app.post('/ValidateVerification', cors(corsOptions), function (request, response
     }
     catch (error) {
         response.send({
-            "Success":false,
+            "Success": false,
             "Error_Message": error
         })
     }
@@ -395,25 +398,25 @@ app.post('/VerifyPassword', cors(corsOptions), function (request, response) {
     var AdminNumber = request.body.AdminNumber;
     var Password = request.body.Password;
 
-    try{
-    if (AdminNumber != null && Password != null) {
-        db.query("Select Password From Student Where AdminNumber = ? ;", [AdminNumber], async function (error, result, fields) {
-                if (result.length>0) {
+    try {
+        if (AdminNumber != null && Password != null) {
+            db.query("Select Password From Student Where AdminNumber = ? ;", [AdminNumber], async function (error, result, fields) {
+                if (result.length > 0) {
 
-                        var match = bcrypt.compareSync(Password, result[0].Password);
+                    var match = bcrypt.compareSync(Password, result[0].Password);
 
-                        if (match) {
-                            response.send({
-                                "Success": true,
-                                "PasswordIsCorrect": true
-                            });
-                        }
-                        else {
-                            response.send({
-                                "Success": true,
-                                "PasswordIsCorrect": false
-                            });
-                        }
+                    if (match) {
+                        response.send({
+                            "Success": true,
+                            "PasswordIsCorrect": true
+                        });
+                    }
+                    else {
+                        response.send({
+                            "Success": true,
+                            "PasswordIsCorrect": false
+                        });
+                    }
                 }
                 else {
                     response.send({
@@ -423,7 +426,7 @@ app.post('/VerifyPassword', cors(corsOptions), function (request, response) {
                 }
             });
         }
-    }catch(err){
+    } catch (err) {
         response.send({
             "Success": false,
             "PasswordIsCorrect": false
@@ -439,9 +442,9 @@ app.put('/UpdatePassword', cors(corsOptions), function (request, response) {
 
     var query = 'Update Student Set Password = ? Where AdminNumber = ?;';
     var parameter = [HashedPassword, AdminNumber];
-    
+
     try {
-        db.query(query, parameter , function (err, result, fields) {
+        db.query(query, parameter, function (err, result, fields) {
             if (err) {
                 response.send({
                     "Success": false,
@@ -487,9 +490,16 @@ app.post('/OverwriteDevice', cors(corsOptions), async function (request, respons
             if (result.length > 0) {
                 var match = bcrypt.compareSync(InputPassword, result[0].Password);
                 if (match) {
-                    
-                    var query = 'Update Student Set UUID = ?, LastRegisterDate = DATE_FORMAT(?, "%Y-%m-%d"), ' +
-                    'TimesOfOverwriteDevice = (TimesOfOverwriteDevice + 1) Where AdminNumber = ?';
+
+                    var query = 'Update Student Set UUID = ?, LastRegisterDate = DATE_FORMAT(?, "%Y-%m-%d") ' +
+                        'Where AdminNumber = ?';
+
+                    db.query('Select * From OverwriteDevice_Setting;', function (err, result, fields) {   //check if overwritesetting is enabled. if yes, everytime overwrite will add 1 chance.
+                        if (!err && result.length > 0) {
+                            if (result[0].OverwriteEnabled == 1)
+                                query = 'Update Student Set UUID = ?, LastRegisterDate = DATE_FORMAT(?, "%Y-%m-%d"), ' +
+                                    'TimesOfOverwriteDevice = (TimesOfOverwriteDevice + 1) Where AdminNumber = ?';
+                        }
 
                     var parameter = [UUID, CurrentDate, AdminNumber];
 
@@ -510,6 +520,8 @@ app.post('/OverwriteDevice', cors(corsOptions), async function (request, respons
                                 })
                             }
                         });
+                    });
+
                 }
                 else {
                     response.send({
@@ -661,44 +673,44 @@ app.post('/LessonAttendanceByStudent', cors(corsOptions), function (request, res
 });
 
 //Gets all the lessons for the day that the student has yet to attend.
-app.post('/LessonForTheDay',cors(corsOptions),function(request,response){
+app.post('/LessonForTheDay', cors(corsOptions), function (request, response) {
 
     var AdminNumber = request.body.AdminNumber;
 
     var CurrentDate = (moment().tz('Asia/Singapore').format('YYYY-MM-DD'));
     var CurrentTime = (moment().tz('Asia/Singapore').format('HH:mm:ss'));
 
-    var query  = 'Select Distinct l.*, m.ModuleName From Lesson l ' +
-    'Inner Join Schedule sh On l.LessonID = sh.LessonID '+
-    'Inner Join Student st On st.AdminNumber = sh.AdminNumber '+
-    'Inner Join Module m On l.ModuleCode = m.ModuleCode ' +
-    'Where LessonDate = ? '+
-    "And AddTime(LessonTime, Concat(Convert(LessonDuration, char),':0:0')) >= Convert(?, Time) "+
-    'And st.AdminNumber = ? ' +
-    'Order By l.LessonTime;';
+    var query = 'Select Distinct l.*, m.ModuleName From Lesson l ' +
+        'Inner Join Schedule sh On l.LessonID = sh.LessonID ' +
+        'Inner Join Student st On st.AdminNumber = sh.AdminNumber ' +
+        'Inner Join Module m On l.ModuleCode = m.ModuleCode ' +
+        'Where LessonDate = ? ' +
+        "And AddTime(LessonTime, Concat(Convert(LessonDuration, char),':0:0')) >= Convert(?, Time) " +
+        'And st.AdminNumber = ? ' +
+        'Order By l.LessonTime;';
 
-    var parameter=[CurrentDate, CurrentTime, AdminNumber];
+    var parameter = [CurrentDate, CurrentTime, AdminNumber];
 
     db.query(query, parameter, function (err, result, fields) {
         if (err) {
             response.send({
-                "Success":false,
-                "Lesson_Results":null,
-                "Error_Message":err.sqlMessage
+                "Success": false,
+                "Lesson_Results": null,
+                "Error_Message": err.sqlMessage
             })
         }
-        else if(result.length>0){
+        else if (result.length > 0) {
             response.send({
-                "Success":true,
-                "Lesson_Results":result,
-                "Error_Message":null
+                "Success": true,
+                "Lesson_Results": result,
+                "Error_Message": null
             })
         }
-        else{
+        else {
             response.send({
-                "Success":false,
-                "Lesson_Results":null,
-                "Error_Message":null
+                "Success": false,
+                "Lesson_Results": null,
+                "Error_Message": null
 
             })
         }
@@ -710,20 +722,20 @@ app.get('/LocationSettings', cors(corsOptions), function (request, response) {
     db.query('Select * From Location_Function_Setting;', function (err, result, fields) {
         if (err) {
             response.send({
-                "Success":false,
-                "Setting_Results":null
+                "Success": false,
+                "Setting_Results": null
             })
         }
-        else if(result.length>0){
+        else if (result.length > 0) {
             response.send({
-                "Success":true,
-                "Setting_Results":result[0]
+                "Success": true,
+                "Setting_Results": result[0]
             })
         }
-        else{
+        else {
             response.send({
-                "Success":false,
-                "Setting_Results":null
+                "Success": false,
+                "Setting_Results": null
             })
         }
     })
@@ -734,20 +746,20 @@ app.get('/ChangeDeviceSettings', cors(corsOptions), function (request, response)
     db.query('Select * From OverwriteDevice_Setting;', function (err, result, fields) {
         if (err) {
             response.send({
-                "Success":false,
-                "Setting_Results":null
+                "Success": false,
+                "Setting_Results": null
             })
         }
-        else if(result.length>0){
+        else if (result.length > 0) {
             response.send({
-                "Success":true,
-                "Setting_Results":result[0]
+                "Success": true,
+                "Setting_Results": result[0]
             })
         }
-        else{
+        else {
             response.send({
-                "Success":false,
-                "Setting_Results":null
+                "Success": false,
+                "Setting_Results": null
             })
         }
     })
