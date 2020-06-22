@@ -69,23 +69,6 @@ db.getConnection(async (err) => {
     }
     var AdminNumber = '173642u';
     var CurrentDate = (moment().tz('Asia/Singapore').format('YYYY-MM-DD'));
-
-    var query = 'Update Student Set UUID = ?, LastRegisterDate = DATE_FORMAT(?, "%Y-%m-%d") ' +
-    'Where AdminNumber = ?';
-
-db.query('Select * From OverwriteDevice_Setting;', function (err, result, fields) {   //check if overwritesetting is enabled. if yes, everytime overwrite will add 1 chance.
-    
-        console.log(result[0].OverwriteEnabled);
-        if (result[0].OverwriteEnabled == 1){
-            
-            query = 'Update Student Set UUID = ?, LastRegisterDate = DATE_FORMAT(?, "%Y-%m-%d"), ' +
-            'TimesOfOverwriteDevice = (TimesOfOverwriteDevice + 1) Where AdminNumber = ?';
-        }
-console.log(query);
-
-
-});
-
 });
 
 //web url test, this method is nvr used.
