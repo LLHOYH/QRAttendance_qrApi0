@@ -567,7 +567,7 @@ app.put('/TakeAttendance', cors(corsOptions), function (request, response) {
                     UpdateClockType = 'ClockIn';
                 }
 
-                var ClockedTime = (moment().tz('Asia/Singapore').format('HH:mm'));
+                var ClockedTime = (moment().tz('Asia/Singapore').format('HH:mm:ss'));
                 var ScheduleID = result[0].ScheduleID;
                 var updateQuery;
 
