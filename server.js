@@ -83,13 +83,13 @@ app.get('/TestConnection', cors(corsOptions), function (request, response) {
         else if (result.length > 0) {
             response.send({
                 "Success": true,
-                "Message": "API Working. Database Working. Data Gotten"
+                "Message": "API Working. Database Working. Student Data Gotten"
             })
         }
         else {
             response.send({
                 "Success": true,
-                "Message": "API Working. Database Working. But No Data"
+                "Message": "API Working. Database Working. But No Student Data"
             })
         }
     })
