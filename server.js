@@ -49,10 +49,10 @@ app.get('/', cors(corsOptions), (req, res, next) => {
 // Update the details if DB's details changed --important
 const db = mysql.createPool({
     connectionLimit: 1000,
-    host: '182.50.133.78',
-    user: 'nypUser',
-    password: 'P@ssw0rd!',
-    database: 'qrAttend'
+    host: 'xxxxxxxxx',
+    user: 'xxxxxxx',
+    password: 'xxxxxx',
+    database: 'xxxxxxx'
 });
 
 // Basic things to include
